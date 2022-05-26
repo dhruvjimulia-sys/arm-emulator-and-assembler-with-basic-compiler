@@ -10,23 +10,30 @@ struct Processor {
 	uint32_t registers[REGISTERS];
 };	
 
+
+uint8_t reverse(uint8_t b) {
+   b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+   b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+   b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+   return b;
+}
+
 uint8_t* load(char filename[]) {
 	FILE *fp;
-	uint64_t size;
 	
 	fp = fopen(filename, "rb");
 	fseek(fp, 0, SEEK_END);
 	uint64_t filesize = ftell(fp);
-	size = filesize / 4;
 	fseek(fp, 0, SEEK_SET);
 
 	uint8_t* instructions = (uint8_t *) malloc(filesize);
 	fread(instructions, 1, filesize, fp); 	
 	fclose(fp);
-	printf("%ld\n", size);
+	printf("%ld\n", filesize/4);
 	
 	for (int i = 0; i < filesize; i++) {
-		for (int j = 7; j >= 0; j--) {
+		instructions[i] = reverse(instructions[i]);
+		for (int j = 0; j < 8; j++) {
 			uint8_t k;
 			k = (instructions[i] & (1 << j)) >> j;
 			printf("%d", k);
@@ -34,10 +41,6 @@ uint8_t* load(char filename[]) {
 		printf("\n");
 	}
 	
-
-	for (int i = 0; i < filesize; i++) {
-		printf("%u\n", instructions[i]);
-	}
 	return instructions;
 }
 
