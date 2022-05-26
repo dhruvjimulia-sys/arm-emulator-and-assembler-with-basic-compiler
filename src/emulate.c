@@ -23,8 +23,9 @@ uint32_t* load(char filename[]) {
 	uint32_t* instructions = (uint32_t *) malloc(size);
 	fread(instructions, 4, size, fp); 	
 	fclose(fp);
+	printf("%ld\n", size);
 	for (int i = 0; i < size; i++) {
-		printf("%d", instructions[i]);
+		printf("%u\n", instructions[i]);
 	}
 
 	return instructions;
@@ -32,7 +33,7 @@ uint32_t* load(char filename[]) {
 
 int main(int argc, char **argv) {
 	if (argc == 2) {
-		printf("%s\n", argv[1]);
+		load(argv[1]);
 	} else if (argc > 2) {
 		printf("Too many arguments supplied\n");
 	} else {
