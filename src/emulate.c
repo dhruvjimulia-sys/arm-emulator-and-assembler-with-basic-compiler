@@ -44,13 +44,24 @@ uint8_t* load(char filename[]) {
 	return instructions;
 }
 
+void process_instructions(uint8_t* instruction) {
+
+}
+
+void emulator_loop(uint8_t* instructions) {
+
+}
+
 int main(int argc, char **argv) {
-	if (argc == 2) {
-		load(argv[1]);
-	} else if (argc > 2) {
-		printf("Too many arguments supplied\n");
-	} else {
-		printf("No arguments\n");
+	if (argc != 2) {
+		if (argc > 2) {
+			printf("Too many arguments supplied\n");
+		} else {
+			printf("No arguments\n");
+		}
+		return EXIT_FAILURE;
 	}
+	uint8_t* instructions = load(argv[1]);
+	emulator_loop(instructions);
 	return EXIT_SUCCESS;
 }
