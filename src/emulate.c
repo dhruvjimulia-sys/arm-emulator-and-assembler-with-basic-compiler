@@ -4,11 +4,13 @@
 
 #define MEM_SIZE 65536
 #define REGISTERS 17
+#define PC_REGISTER 15
+#define BYTES_PER_INSTRUCTION 4
 
 struct Processor {
 	uint8_t memory[MEM_SIZE];
 	uint32_t registers[REGISTERS];
-};	
+} processor;	
 
 
 uint8_t reverse(uint8_t b) {
@@ -49,7 +51,13 @@ void process_instructions(uint8_t* instruction) {
 }
 
 void emulator_loop(uint8_t* instructions) {
-
+	uint8_t* fetched = (uint8_t*) malloc(BYTES_PER_INSTRUCTION);
+	uint8_t* decoded = (uint8_t*) malloc(BYTES_PER_INSTRUCTION);
+	/* Fetch */
+	for (int i = 0; i < BYTES_PER_INSTRUCTION; i++) {
+		fetched[i] = instructions[processor.registers[PC_REGISTER] + i];
+	}
+	processor.registers[PC_REGISTER] += BYTES_PER_INSTRUCTION;
 }
 
 int main(int argc, char **argv) {
