@@ -50,11 +50,25 @@ uint8_t createMask(uint8_t start, uint8_t finish) {
 	return r;
 }
 
-void process_instructions(uint8_t* instruction) {
-	uint8_t second4bits = createMask(24, 27) & *(instruction); 	
-	if (second4bits == 1010) {
-		//PC register = PC
-		PC += createMask(0, 24) & *(instruction);
+bool condition_check(uint8_t type) {
+	// check if flags are set according to type of condition check
+}
+
+//return true: clear pipeline
+//return false: leave pipeline intact
+bool process_instructions(uint8_t* instruction) {
+	uint8_t first4bits = createMask(31, 28) & *(instruction);
+	uint8_t second4bits = createMask(24, 27) & *(instruction); 
+	// Branch
+	if (second4bits == 10) {
+		if condition_check(first4bits) {
+			int32_t offset;
+			offset = (createMask(0, 23) & *(instruction)) << 2;
+			if (createMask(25,25) & offset) {
+				offset += 4227858432U;
+			}
+			PC_REGISTER += offset - 8;
+		}
 	}
 }
 
