@@ -8,14 +8,12 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t *i
 
 	int opcode = create_mask(21, 24, instr);
 	int set_cpsr = create_mask(20, 20, instr);
-	int rd_index = create_mask(12, 15, instr);
-	int rn_index = create_mask(16, 19, instr);
 	int rm_val = create_mask(0, 11, instr);
 	int32_t op2;
 	int32_t result;
-	uint32_t dest = processor->registers[rd_index];
-	uint32_t rn_val = processor->registers[rn_index];	
-	uint32_t cpsr = processor->registers[CPSR];
+	uint32_t *dest = &processor->registers[create_mask(12, 15, instr)];
+	uint32_t rn_val = processor->registers[create_mask(16, 19, instr)];	
+	uint32_t *cpsr_reg = &processor->registers[CPSR];
 
 	if (create_mask(25, 25, instr)) {
 		/* operand2 is an immediate constant */
@@ -32,37 +30,37 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t *i
 
 	switch(opcode) {
 		case 0: /* and, rn AND Operand2 */
-			dest = rn_val & op2;
+			*dest = rn_val & op2;
 			result = dest;
 			break;
 		case 1: /* eor, rn EOR Operand2 */
-			dest = rn_val ^ op2;
+			*dest = rn_val ^ op2;
 			result = dest;
 			break;
 		case 2: /* sub, rn - operand2 */
-			dest = rn_val -op2;
+			*dest = rn_val -op2;
 			result = dest;
 
 			if (set_cpsr) {
 				//set C flag if subtraction produced a borrow
-				set_c(cpsr,rn_val < op2_unsigned);
+				set_c(cpsr_reg,rn_val < op2_unsigned);
 			}
 			break;
 		case 3: /* rsub, reverse sub, operand2 - rn */
-			dest = op2 - (rn_val);
+			*dest = op2 - (rn_val);
 			result = dest;
 			if (set_cpsr) {
 				//set C flag if subtraction produced a borrow
-				set_c(cpsr,rn_val > op2);
+				set_c(cpsr_reg,rn_val > op2);
 			}
 			break;
 		case 4: /* add, rn + operan2 */
-			dest = rn_val + op2;
+			*dest = rn_val + op2;
 			result = dest;
 
 			if(set_cpsr) {
 				//set C flag if unsigned overflow occurs
-  				set_c(cpsr,(rn_val + op2_unsigned) < rn_val);
+  				set_c(cpsr_reg,(rn_val + op2_unsigned) < rn_val);
 			}
 			break;
 		case 8: /* tst, and (but result is not written) */
@@ -76,14 +74,14 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t *i
 
 			if (set_cpsr) {
 				//set C flag if subtraction produced a borrow
-				set_c(cpsr,rn_val > op2_unsigned);
+				set_c(cpsr_reg,rn_val > op2_unsigned);
 			}
 			break;
 		case 12: /* orr, rn OR operand2 */
 			result = rn_val | op2;
 			break;
 		case 13: /* mov, operand2 is moved, Rn is ignored */
-			dest = op2;
+			*dest = op2;
 			result = dest;
 			break;
 		default:
@@ -92,8 +90,8 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t *i
 	}
 
 	if (set_cpsr) {	
-		set_z(cpsr, result);
-		set_n(cpsr, result);
+		set_z(cpsr_reg, result);
+		set_n(cpsr_reg, result);
 	}
 }
 
@@ -103,7 +101,7 @@ int shift_rm_register(uint32_t *instr, struct Processor processor, int set_cpsr)
 	unsigned int bit4 = create_mask(4, 4, instr); 
 	unsigned int shift_type = create_mask(5, 6, instr);
 	unsigned int shift_amount;
-	uint32_t *cpsr = processor->registers[CPSR];
+	uint32_t *cpsr_reg = &processor->registers[CPSR];
 
 	if (bit4) {
 		//shift amount is specified by rs
@@ -114,7 +112,7 @@ int shift_rm_register(uint32_t *instr, struct Processor processor, int set_cpsr)
 		shift_amount = create_mask(7, 11, instr);
 	}
 
-	return shift(processor->registers[rm], shift_type, shift_amount, cpsr, set_cpsr);
+	return shift(processor->registers[rm], shift_type, shift_amount, set_cpsr, cpsr_reg);
 }
 
 void execute_branch_instruction(uint32_t *instr) {
@@ -126,7 +124,7 @@ void execute_branch_instruction(uint32_t *instr) {
 }
 
 int32_t shift(uint32_t n, unsigned int shift_type, unsigned int shift_amount, 
-			uint32_t set_cpsr, uint32_t *cpsr) {
+			uint32_t set_cpsr, uint32_t *cpsr_reg) {
 	int32_t cout = 0;
 	int result = 0;
 	
@@ -154,7 +152,7 @@ int32_t shift(uint32_t n, unsigned int shift_type, unsigned int shift_amount,
 
 	//set C condition code to carry out from the shifter
 	if (set_cpsr) {
-		set_c(cpsr, cout);
+		set_c(cpsr_reg, cout);
 	}
 
 	return result;
@@ -163,7 +161,7 @@ int32_t shift(uint32_t n, unsigned int shift_type, unsigned int shift_amount,
 void execute_multiply_instruction(struct Processor processor, uint32_t *instr) {
 	uint32_t rm_val = processor->registers[create_mask(0, 3, instr)];
 	uint32_t rs_val = processor->registers[create_mask(8, 11, instr)];
-	uint32_t cpsr = processor->registers[CPSR];
+	uint32_t *cpsr_reg = &processor->registers[CPSR];
 	int32_t set_cpsr = create_mask(20, 20, instr);
 	
 	uint64_t product = rm_val * rs_val;
@@ -181,8 +179,8 @@ void execute_multiply_instruction(struct Processor processor, uint32_t *instr) {
 
 	//set condition codes
 	if (set_cpsr) {
-		set_z(cpsr, product32b);
-		set_n(cpsr, product32b);
+		set_z(cpsr_reg, product32b);
+		set_n(cpsr_reg, product32b);
 	}
 }
 
