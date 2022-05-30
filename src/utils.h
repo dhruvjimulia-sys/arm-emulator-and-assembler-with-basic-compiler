@@ -1,9 +1,10 @@
 #include "type_definitions.h"
+#include <stdint.h>
 
 #ifndef EMUL_UTILS_H
 #define EMUL_UTILS_H
 
-instr_type get_instr_type(instr);
+instr_type get_instr_type(uint32_t instr);
 
 uint32_t rotate_right(uint32_t n, unsigned int rot_val);
 

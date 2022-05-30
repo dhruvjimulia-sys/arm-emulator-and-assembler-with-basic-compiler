@@ -16,18 +16,16 @@ struct Processor {
 } processor;
 
 enum Flags {
-	eq = 0;
-	ne = 1;
-	ge = 10;
-	lt = 11;
-	gt = 12;
-	le = 13;
-	al = 14;
-}
+	eq = 0,
+	ne = 1,
+	ge = 10,
+	lt = 11,
+	gt = 12,
+	le = 13,
+	al = 14,
+};
 
 uint8_t reverse(uint8_t b) {
-
-   
    b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
    b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
    b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
@@ -81,12 +79,12 @@ bool condition_check(uint32_t type) {
 	static const uint8_t V_POS = 28;
 
 
-	bool n = extract_bit(N_POS, processor.registers[CPSR_REGISTER]);
-        bool z = extract_bit(Z_POS, processor.registers[CPSR_REGISTER]);
-	bool c = extract_bit(C_POS, processor.registers[CPSR_REGISTER]);
-        bool v = extract_bit(V_POS, processor.registers[CPSR_REGISTER]);
+	bool n = extract_bit(N_POS, &processor.registers[CPSR_REGISTER]);
+    bool z = extract_bit(Z_POS, &processor.registers[CPSR_REGISTER]);
+	bool c = extract_bit(C_POS, &processor.registers[CPSR_REGISTER]);
+    bool v = extract_bit(V_POS, &processor.registers[CPSR_REGISTER]);
 
-        switch (type) {
+    switch (type) {
 		case eq :
 			return z;
 		case ne :
@@ -123,13 +121,13 @@ bool process_instructions(uint8_t* instruction_bytes) {
 	// Branch
 	// Remember to change 10 to the enum Nada made
         if (second4bits == 10) {
-                if condition_check(first4bits) {
+                if (condition_check(first4bits)) {
                         int32_t offset = (int32_t) (createMask(0, 23, instruction)) << 2;
                         if (offset < 0) {
                                 offset = sign_extend_26(offset);
                         }
 		
-                        processor.registers[PC_REGISTER] += offset - PIPLELINE_CORRECTION;
+                        processor.registers[PC_REGISTER] += offset - PIPELINE_CORRECTION;
 			return true;
                 }
         }

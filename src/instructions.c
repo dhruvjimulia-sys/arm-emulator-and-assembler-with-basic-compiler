@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include "utils.h"
-#include "emulator.c"
+#include "emulate.c"
 
 void execute_data_processing_instruction(struct Processor processor, uint32_t *instr) {
 
