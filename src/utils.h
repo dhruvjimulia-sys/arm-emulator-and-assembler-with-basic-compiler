@@ -13,6 +13,8 @@ unsigned int get_rn_index(uint32_t instr);
 
 unsigned int get_rd_index(uint32_t instr);
 
+unsigned int operand2_or_offset(uint32_t instr);
+
 uint32_t rotate_right(uint32_t n, unsigned int rot_val);
 
 unsigned int get_rs_mult(uint32_t instr);

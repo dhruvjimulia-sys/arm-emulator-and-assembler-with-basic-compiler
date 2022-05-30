@@ -16,6 +16,7 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t in
 	int set_cpsr = set_cond_codes(instr);
 	int rd_index = get_rd_index(instr);
 	int rn_index = get_rn_index(instr);
+	int rm_val = operand2_or_offset(instr);
 	int32_t op2;
 	int32_t result;
 	uint32_t dest = processor->registers[rd_index];
@@ -24,14 +25,13 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t in
 
 	if (immediate(instr)) {
 		/* second operand2 is an immediate constant, extract operand2 value from instruction */
-		op2 = instr & IMM_OP2;
+		rm_val = instr & IMM_OP2;
 		//get rotation value
 		uint32_t rot_val = 2 * ((instr & ROT_VAL_IMM_OP2) >> 8);
-		op2 = rotate_right(op2, rot_val);
+		op2 = rotate_right(rm_val, rot_val);
 	} else {
 		/* operand is shifted register */
-		//implement?
-		op2 = processor->registers[(instr & 0xf)];
+		op2 = shift_rm_register(rm_val, processor, set_cpsr);
 	}
 
 	uint32_t op2_unsigned = op2;
@@ -98,7 +98,7 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t in
 	}
 }
 
-int shift_rm_register(int op2, struct Processor processor) {
+int shift_rm_register(int op2, struct Processor processor, int set_cpsr) {
 	unsigned int rm = op2 & REG_OP2_RM_MASK;
 	//if we do the optional part where shift specified by rs register
 	unsigned int bit4 = op2 & BIT_4_MASK; 
@@ -115,7 +115,7 @@ int shift_rm_register(int op2, struct Processor processor) {
 		shift_const_amount = ((op2 >> 7) & 0x1f);
 	}
 
-	return shift(processor->registers[rm], shift_type, shift_const_amount, );
+	return shift(processor->registers[rm], shift_type, shift_const_amount,cpsr, set_cpsr);
 }
 
 void execute_branch_instruction(uint32_t instr) {
@@ -193,6 +193,7 @@ void execute_multiply_instruction(struct Processor processor, uint32_t instr) {
 void execute_single_data_transfer(struct Processor processor, uint32_t instr) {
 
 	int opcode = get_opcode(instr);
+	int set_cpsr = set_cond_codes(instr);
 	//should we declare functions for this too to avoid magic numbers?
 	int p_bit = (instr >> 24) & 0b1;
 	int u_bit = (instr >> 23) & 0b1;
@@ -208,7 +209,7 @@ void execute_single_data_transfer(struct Processor processor, uint32_t instr) {
 
 	if (immediate(instr)) {
 		//offset interpreted as a shifted register
-		offset = shift_rm_register(offset, processor);
+		offset = shift_rm_register(offset, processor, set_cpsr);
 	}
 
 	if (p_bit) {

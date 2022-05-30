@@ -7,6 +7,7 @@
 #define I_BIT_MASK 1<<25
 #define RN_MASK 0xf0000
 #define RD_MASK 0xf000
+#define OP2_OFFSET_MASK 0xfff
 #define RM_MULT_MASK 0b11
 #define RS_MULT_MASK 0xf00
 #define RN_MULT_MASK 0xf000
@@ -56,6 +57,11 @@ unsigned int get_rn_index(uint32_t instr) {
 //get rd index from instr
 unsigned int get_rd_index(uint32_t instr) {
         return (RD_MASK & instr);
+}
+
+//get operand 2 (data processing instruction) or offset (single data transfer instruction)
+unsigned int operand2_or_offset(uint32_t instr) {
+	return (OP2_OFFSET_MASK & instr);
 }
 
 //rotates an integer right by the specified rotation value
