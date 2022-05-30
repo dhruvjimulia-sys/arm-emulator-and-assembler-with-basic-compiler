@@ -4,16 +4,36 @@
 #include "utils.h"
 #include "emulate.c"
 
+int shift_rm_register(uint32_t *instr, struct Processor processor, int set_cpsr) {
+	unsigned int rm = create_mask(0, 3, instr);
+	//for the optional part where shift is specified by rs register
+	unsigned int bit4 = create_mask(4, 4, instr); 
+	unsigned int shift_type = create_mask(5, 6, instr);
+	unsigned int shift_amount;
+	uint32_t *cpsr_reg = &processor.registers[CPSR_REGISTER];
+
+	if (bit4) {
+		//shift amount is specified by rs
+		int rs = create_mask(8, 11, instr);
+		shift_amount = processor.registers[rs] & 0xff;
+	} else {
+		//shift amount is a constant amount
+		shift_amount = create_mask(7, 11, instr);
+	}
+
+	return shift(processor.registers[rm], shift_type, shift_amount, set_cpsr, cpsr_reg);
+}
+
 void execute_data_processing_instruction(struct Processor processor, uint32_t *instr) {
 
 	int opcode = create_mask(21, 24, instr);
 	int set_cpsr = create_mask(20, 20, instr);
-	int rm_val = create_mask(0, 11, instr);
+	uint32_t rm_val = create_mask(0, 11, instr);
 	int32_t op2;
 	int32_t result;
-	uint32_t *dest = &processor->registers[create_mask(12, 15, instr)];
-	uint32_t rn_val = processor->registers[create_mask(16, 19, instr)];	
-	uint32_t *cpsr_reg = &processor->registers[CPSR];
+	uint32_t *dest = &processor.registers[create_mask(12, 15, instr)];
+	uint32_t rn_val = processor.registers[create_mask(16, 19, instr)];	
+	uint32_t *cpsr_reg = &processor.registers[CPSR_REGISTER];
 
 	if (create_mask(25, 25, instr)) {
 		/* operand2 is an immediate constant */
@@ -23,7 +43,7 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t *i
 		op2 = rotate_right(rm_val, rot_val);
 	} else {
 		/* operand is shifted register */
-		op2 = shift_rm_register(rm_val, processor, set_cpsr);
+		op2 = shift_rm_register(instr, processor, set_cpsr);
 	}
 
 	uint32_t op2_unsigned = op2;
@@ -31,15 +51,15 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t *i
 	switch(opcode) {
 		case 0: /* and, rn AND Operand2 */
 			*dest = rn_val & op2;
-			result = dest;
+			result = *dest;
 			break;
 		case 1: /* eor, rn EOR Operand2 */
 			*dest = rn_val ^ op2;
-			result = dest;
+			result = *dest;
 			break;
 		case 2: /* sub, rn - operand2 */
 			*dest = rn_val -op2;
-			result = dest;
+			result = *dest;
 
 			if (set_cpsr) {
 				//set C flag if subtraction produced a borrow
@@ -48,7 +68,7 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t *i
 			break;
 		case 3: /* rsub, reverse sub, operand2 - rn */
 			*dest = op2 - (rn_val);
-			result = dest;
+			result = *dest;
 			if (set_cpsr) {
 				//set C flag if subtraction produced a borrow
 				set_c(cpsr_reg,rn_val > op2);
@@ -56,7 +76,7 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t *i
 			break;
 		case 4: /* add, rn + operan2 */
 			*dest = rn_val + op2;
-			result = dest;
+			result = *dest;
 
 			if(set_cpsr) {
 				//set C flag if unsigned overflow occurs
@@ -82,11 +102,10 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t *i
 			break;
 		case 13: /* mov, operand2 is moved, Rn is ignored */
 			*dest = op2;
-			result = dest;
+			result = *dest;
 			break;
 		default:
 			printf("Invalid opcode.\n");
-			return EXIT_FAILURE;
 	}
 
 	if (set_cpsr) {	
@@ -95,32 +114,12 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t *i
 	}
 }
 
-int shift_rm_register(uint32_t *instr, struct Processor processor, int set_cpsr) {
-	unsigned int rm = create_mask(0, 3, instr);
-	//for the optional part where shift is specified by rs register
-	unsigned int bit4 = create_mask(4, 4, instr); 
-	unsigned int shift_type = create_mask(5, 6, instr);
-	unsigned int shift_amount;
-	uint32_t *cpsr_reg = &processor->registers[CPSR];
-
-	if (bit4) {
-		//shift amount is specified by rs
-		int rs = create_mask(8, 11, instr);
-		shift_amount = processor->registers[rs] & 0xff;
-	} else {
-		//shift amount is a constant amount
-		shift_amount = create_mask(7, 11, instr);
-	}
-
-	return shift(processor->registers[rm], shift_type, shift_amount, set_cpsr, cpsr_reg);
-}
-
 void execute_branch_instruction(uint32_t *instr) {
 	unsigned int offset = create_mask(0, 23, instr);
 	int32_t dest;
 
 	dest = offset << 2;
-	processor->registers[PC] = dest + 8;
+	processor.registers[PC_REGISTER] = dest + 8;
 }
 
 int32_t shift(uint32_t n, unsigned int shift_type, unsigned int shift_amount, 
@@ -159,9 +158,9 @@ int32_t shift(uint32_t n, unsigned int shift_type, unsigned int shift_amount,
 }
 
 void execute_multiply_instruction(struct Processor processor, uint32_t *instr) {
-	uint32_t rm_val = processor->registers[create_mask(0, 3, instr)];
-	uint32_t rs_val = processor->registers[create_mask(8, 11, instr)];
-	uint32_t *cpsr_reg = &processor->registers[CPSR];
+	uint32_t rm_val = processor.registers[create_mask(0, 3, instr)];
+	uint32_t rs_val = processor.registers[create_mask(8, 11, instr)];
+	uint32_t *cpsr_reg = &processor.registers[CPSR_REGISTER];
 	int32_t set_cpsr = create_mask(20, 20, instr);
 	
 	uint64_t product = rm_val * rs_val;
@@ -170,12 +169,12 @@ void execute_multiply_instruction(struct Processor processor, uint32_t *instr) {
 	
 	/* multiply and accumulate instruction */
 	if (acc_cond_bit) {
-		product += processor->registers[create_mask(12, 15, instr)];
+		product += processor.registers[create_mask(12, 15, instr)];
 	}
 	
 	//truncate product (multiply instruction result) to 32 bits
 	uint32_t product32b = product;
-	processor->registers[create_mask(16, 19, instr)] = product32b;
+	processor.registers[create_mask(16, 19, instr)] = product32b;
 
 	//set condition codes
 	if (set_cpsr) {
@@ -191,22 +190,22 @@ void execute_single_data_transfer(struct Processor processor, uint32_t *instr) {
 	unsigned int offset = create_mask(0, 11, instr);
 	int rd_index = create_mask(12, 15, instr);
 	int rn_index = create_mask(16, 19, instr);
-	uint32_t *dest = processor->registers[rd_index];
-	uint32_t *base_reg = processor->registers[rn_index];
+	uint32_t *dest = &processor.registers[rd_index];
+	uint32_t *base_reg = &processor.registers[rn_index];
 
 
 	if (create_mask(25, 25, instr)) {
-		//offset interpreted as a shifted register
-		offset = shift_rm_register(offset, processor, 0);
+		// offset interpreted as a shifted register
+		offset = shift_rm_register(instr, processor, 0);
 	}
 
 	if (l_bit) {
-			//ldr, load word from memory
-			dest = *((uint32_t*) base_reg);
-		} else {
-			//str, store word in memory
-			*((uint32_t*) base_reg) = dest;
-		}
+		//ldr, load word from memory
+		*dest = *((uint32_t*) base_reg);
+	} else {
+		//str, store word in memory
+		*((uint32_t*) base_reg) = *dest;
+	}
 
 	if (p_bit == 0) {
 		//post-indexing

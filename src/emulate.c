@@ -60,7 +60,7 @@ uint8_t* load(char filename[]) {
 	return instructions;
 }
 
-uint32_t createMask(uint8_t start, uint8_t finish, uint32_t* instruction) {
+uint32_t create_mask(uint8_t start, uint8_t finish, uint32_t* instruction) {
         uint32_t r;
         r = ((1 << (finish - start)) - 1) << start;
         return (r & *(instruction)) >> start;
@@ -68,7 +68,7 @@ uint32_t createMask(uint8_t start, uint8_t finish, uint32_t* instruction) {
 
 
 bool extract_bit(uint8_t position, uint32_t* instruction) {
-	return createMask(position, position, instruction) == 1;
+	return create_mask(position, position, instruction) == 1;
 }
 
 bool condition_check(uint32_t type) {
