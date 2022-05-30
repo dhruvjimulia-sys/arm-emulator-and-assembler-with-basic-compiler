@@ -1,16 +1,15 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <assert.h>
 #include "utils.h"
-#include "emulator.h"
+#include "emulator.c"
 
 #define IMM_OP2 0xff
 #define ROT_VAL_IMM_OP2 0xf00
 #define REG_OP2_RM_MASK 0xf
 #define BIT_4_MASK 0x10
-#define CPSR 16
 
 void execute_data_processing_instruction(struct Processor processor, uint32_t instr) {
-	//use * in the argument list or not??
 
 	int opcode = get_opcode(instr);
 	int set_cpsr = set_cond_codes(instr);
@@ -24,7 +23,7 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t in
 	uint32_t cpsr = processor->registers[CPSR];
 
 	if (immediate(instr)) {
-		/* second operand2 is an immediate constant, extract operand2 value from instruction */
+		/* operand2 is an immediate constant */
 		rm_val = instr & IMM_OP2;
 		//get rotation value
 		uint32_t rot_val = 2 * ((instr & ROT_VAL_IMM_OP2) >> 8);
@@ -48,7 +47,9 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t in
 		case 2: /* sub, rn - operand2 */
 			dest = rn_val -op2;
 			result = dest;
+
 			if (set_cpsr) {
+				//set C flag if subtraction produced a borrow
 				set_c(cpsr,rn_val < op2_unsigned);
 			}
 			break;
@@ -56,6 +57,7 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t in
 			dest = op2 - (rn_val);
 			result = dest;
 			if (set_cpsr) {
+				//set C flag if subtraction produced a borrow
 				set_c(cpsr,rn_val > op2);
 			}
 			break;
@@ -63,8 +65,8 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t in
 			dest = rn_val + op2;
 			result = dest;
 
-			//check for unsigned overflow
 			if(set_cpsr) {
+				//set C flag if unsigned overflow occurs
   				set_c(cpsr,(rn_val + op2_unsigned) < rn_val);
 			}
 			break;
@@ -76,7 +78,9 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t in
 			break;
 		case 10: /* cmp, sub (but result is not written) */
 			result = rn_val - op2;
+
 			if (set_cpsr) {
+				//set C flag if subtraction produced a borrow
 				set_c(cpsr,rn_val > op2_unsigned);
 			}
 			break;
@@ -100,7 +104,7 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t in
 
 int shift_rm_register(int op2, struct Processor processor, int set_cpsr) {
 	unsigned int rm = op2 & REG_OP2_RM_MASK;
-	//if we do the optional part where shift specified by rs register
+	//for the optional part where shift is specified by rs register
 	unsigned int bit4 = op2 & BIT_4_MASK; 
 	unsigned int shift_type = ((op2 & 0x60) >> 5);
 	unsigned int shift_const_amount;
@@ -111,7 +115,7 @@ int shift_rm_register(int op2, struct Processor processor, int set_cpsr) {
 		int rs = ((op2 >> 8) & 0xf);
 		shift_const_amount = processor->registers[rs] & 0xff;
 	} else {
-		//shift amount is a constant amount (extract from operand2)
+		//shift amount is a constant amount
 		shift_const_amount = ((op2 >> 7) & 0x1f);
 	}
 
@@ -123,9 +127,6 @@ void execute_branch_instruction(uint32_t instr) {
 	int32_t dest;
 
 	dest = offset << 2;
-	//we could return this as result
-	//or write it to PC directly (dont forget to #define PC, this will be fixed throughout emulator)
-
 	//processor->registers[PC] = dest + 8;
 }
 
