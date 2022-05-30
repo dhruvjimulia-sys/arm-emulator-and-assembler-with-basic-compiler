@@ -47,9 +47,35 @@ uint8_t* load(char filename[]) {
 	return instructions;
 }
 
-bool process_instructions(uint8_t* instruction) {
-	return true;
+uint8_t createMask(uint8_t start, uint8_t finish) {
+        uint8_t r;
+        r = ((1 << (finish - start)) - 1) << start
+        return r;
 }
+
+bool condition_check(uint8_t type) {
+        switch 
+}
+
+//return true: clear pipeline
+//return false: leave pipeline intact
+bool process_instructions(uint8_t* instruction) {
+        uint8_t first4bits = createMask(31, 28) & *(instruction);
+        uint8_t second4bits = createMask(24, 27) & *(instruction); 
+        // Branch
+        if (second4bits == 10) {
+                if condition_check(first4bits) {
+                        int32_t offset;
+                        offset = (createMask(0, 23) & *(instruction)) << 2;
+                        if (createMask(25,25) & offset) {
+                                offset += 4227858432U;
+                        }
+                        PC_REGISTER += offset - 8;
+                }
+        }
+}
+
+
 
 void clear_array(uint8_t* arr, uint64_t length) {
 	for (int i = 0; i < length; i++) {
