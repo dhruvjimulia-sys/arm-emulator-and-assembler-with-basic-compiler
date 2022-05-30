@@ -6,6 +6,7 @@
 
 #define Z_FLAG 0b10
 #define V_FLAG 0b1
+#define MULT_BITS 0x00000090
 
 //get instruction type
 instr_type get_instr_type(uint32_t *instr) {
@@ -13,7 +14,11 @@ instr_type get_instr_type(uint32_t *instr) {
 
 	switch(type_bits) {
 		case 0:
-			//how would you classify between DATA_PROC and MULTIPLY
+			if (create_mask(4, 7, instr) == MULT_BITS) {
+				return MULTIPLY;
+			} else {
+				return DATA_PROCESS;
+			}
 		case 1: 
 			return TRANSFER;
 			break;
