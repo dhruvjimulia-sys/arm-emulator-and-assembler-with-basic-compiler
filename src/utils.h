@@ -14,7 +14,7 @@ uint32_t create_mask(uint8_t start, uint8_t finish, uint32_t* instruction);
 
 void clear_array(uint8_t* arr, uint64_t length);
 
-bool is_all_zero(uint8_t* arr, uint64_t length)''
+bool is_all_zero(uint8_t* arr, uint64_t length);
 
 instr_type get_instr_type(uint32_t instr);
 

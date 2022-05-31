@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "utils.h"
 #include "type_definitions.h"
+#include "instructions.h"
 
 #define BYTES_PER_INSTRUCTION 4
 #define BITS_PER_INSTRUCTION 32
