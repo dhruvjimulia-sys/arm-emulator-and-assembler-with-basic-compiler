@@ -3,6 +3,7 @@
 #define MEM_SIZE 65536
 #define REGISTERS 17
 
+//processor structure storing state of processor
 struct Processor {
 	uint8_t memory[MEM_SIZE];
 	uint32_t registers[REGISTERS];

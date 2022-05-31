@@ -19,7 +19,6 @@ uint8_t* load(char filename[]) {
 	fread(instructions, 1, filesize, fp);
 	fclose(fp);
 
-
 	printf("%ld\n", filesize / BYTES_PER_INSTRUCTION);
 
 	for (int i = 0; i < filesize; i++) {
@@ -31,7 +30,6 @@ uint8_t* load(char filename[]) {
 		}
 		printf("\n");
 	}
-
 	return instructions;
 }
 
@@ -42,13 +40,12 @@ bool condition_check(uint32_t type) {
 	static const uint8_t C_POS = 29;
 	static const uint8_t V_POS = 28;
 
-
 	bool n = extract_bit(N_POS, &processor.registers[CPSR_REGISTER]);
-    bool z = extract_bit(Z_POS, &processor.registers[CPSR_REGISTER]);
+ 	bool z = extract_bit(Z_POS, &processor.registers[CPSR_REGISTER]);
 	//bool c = extract_bit(C_POS, &processor.registers[CPSR_REGISTER]);
-    bool v = extract_bit(V_POS, &processor.registers[CPSR_REGISTER]);
+ 	bool v = extract_bit(V_POS, &processor.registers[CPSR_REGISTER]);
 
-    switch (type) {
+	switch (type) {
 		case eq :
 			return z;
 		case ne :
@@ -74,23 +71,28 @@ bool condition_check(uint32_t type) {
 //return false: leave pipeline intact
 bool process_instructions(uint8_t* instruction_bytes) {
 	uint32_t *instruction = realloc(instruction_bytes, BITS_PER_INSTRUCTION);
-        uint32_t first4bits = create_mask(31, 28, instruction);
-        uint32_t second4bits = create_mask(24, 27, instruction);
-        static const uint8_t PIPELINE_CORRECTION = 8;
-	// Branch
-	// Remember to change 10 to the enum Nada made
-        if (second4bits == 10) {
-                if (condition_check(first4bits)) {
-                        int32_t offset = (int32_t) (create_mask(0, 23, instruction)) << 2;
-                        if (offset < 0) {
-                                offset = sign_extend_26(offset);
-                        }
-
-                        processor.registers[PC_REGISTER] += offset - PIPELINE_CORRECTION;
-			return true;
+    uint32_t first4bits = create_mask(31, 28, instruction);
+    static const uint8_t PIPELINE_CORRECTION = 8;
+    switch (get_instr_type(instruction)) {
+		case BRANCH :
+            if (condition_check(first4bits)) {
+                int32_t offset = (int32_t) (create_mask(0, 23, instruction)) << 2;
+                if (offset < 0) {
+                    offset = sign_extend_26(offset);
                 }
-        }
-	return false;
+				processor.registers[PC_REGISTER] += offset - PIPELINE_CORRECTION;
+				return true;
+            }
+			return false;
+		case TRANSFER :
+			execute_single_data_transfer(processor, instruction);
+		case MULTIPLY :
+			execute_multiply_instruction(processor, instruction);
+		case DATA_PROCESS :
+			execute_data_processing_instruction(processor, instruction);
+		default:
+			exit(EXIT_FAILURE);
+	}		
 }
 
 void emulator_loop(uint8_t* instructions) {
