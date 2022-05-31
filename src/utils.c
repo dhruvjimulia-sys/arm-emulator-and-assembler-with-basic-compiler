@@ -63,7 +63,7 @@ instr_type get_instr_type(uint32_t *instr) {
 			} else {
 				return DATA_PROCESS;
 			}
-		case 1: 
+		case 1:
 			return TRANSFER;
 		case 2:
 			return BRANCH;
