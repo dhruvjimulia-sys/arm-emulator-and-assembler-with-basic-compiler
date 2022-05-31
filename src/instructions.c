@@ -4,6 +4,41 @@
 #include "utils.h"
 #include "emulate.c"
 
+int32_t shift(uint32_t n, unsigned int shift_type, unsigned int shift_amount, 
+			uint32_t set_cpsr, uint32_t *cpsr_reg) {
+	int32_t cout = 0;
+	int result = 0;
+	
+	switch(shift_type) {
+		case 0: /* lsl */
+			cout = n & (1 << (32 - shift_amount));
+			result = n << shift_amount;
+			break;
+		case 1: /* lsr */
+			cout = n & (1 << (shift_amount - 1));
+			result = n >> shift_amount;
+			break;
+		case 2: /* asr */
+			cout = n & (1 << (shift_amount - 1));
+			result = ((int) n) >> shift_amount;
+			break;
+		case 3: /* ror */
+			cout = n & (1 << (shift_amount - 1));
+			result = rotate_right(n, shift_amount);
+			break;
+		default:
+			printf("Invalid shift type.\n");
+			return EXIT_FAILURE;
+	}
+
+	//set C condition code to carry out from the shifter
+	if (set_cpsr) {
+		set_c(cpsr_reg, cout);
+	}
+
+	return result;
+}
+
 int shift_rm_register(uint32_t *instr, struct Processor processor, int set_cpsr) {
 	unsigned int rm = create_mask(0, 3, instr);
 	//for the optional part where shift is specified by rs register
@@ -120,41 +155,6 @@ void execute_branch_instruction(uint32_t *instr) {
 
 	dest = offset << 2;
 	processor.registers[PC_REGISTER] = dest + 8;
-}
-
-int32_t shift(uint32_t n, unsigned int shift_type, unsigned int shift_amount, 
-			uint32_t set_cpsr, uint32_t *cpsr_reg) {
-	int32_t cout = 0;
-	int result = 0;
-	
-	switch(shift_type) {
-		case 0: /* lsl */
-			cout = n & (1 << (32 - shift_amount));
-			result = n << shift_amount;
-			break;
-		case 1: /* lsr */
-			cout = n & (1 << (shift_amount - 1));
-			result = n >> shift_amount;
-			break;
-		case 2: /* asr */
-			cout = n & (1 << (shift_amount - 1));
-			result = ((int) n) >> shift_amount;
-			break;
-		case 3: /* ror */
-			cout = n & (1 << (shift_amount - 1));
-			result = rotate_right(n, shift_amount);
-			break;
-		default:
-			printf("Invalid shift type.\n");
-			return EXIT_FAILURE;
-	}
-
-	//set C condition code to carry out from the shifter
-	if (set_cpsr) {
-		set_c(cpsr_reg, cout);
-	}
-
-	return result;
 }
 
 void execute_multiply_instruction(struct Processor processor, uint32_t *instr) {
