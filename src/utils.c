@@ -65,12 +65,10 @@ instr_type get_instr_type(uint32_t *instr) {
 			}
 		case 1: 
 			return TRANSFER;
-			break;
 		case 2:
 			return BRANCH;
-			break;
 		default:
-			return EXIT_FAILURE;
+			exit(EXIT_FAILURE);
 	}
 
 }
