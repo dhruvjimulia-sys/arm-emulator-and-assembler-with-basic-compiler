@@ -1,8 +1,12 @@
 #include <stdint.h>
+#include <stdbool.h>
 #include "type_definitions.h"
 
-#ifndef EMUL_UTILS_H
-#define EMUL_UTILS_H
+#ifndef UTILS_H
+#define UTILS_H
+
+#define PC_REGISTER 15
+#define CPSR_REGISTER 16
 
 int32_t sign_extend_26(int32_t extendable);
 
@@ -16,7 +20,7 @@ void clear_array(uint8_t* arr, uint64_t length);
 
 bool is_all_zero(uint8_t* arr, uint64_t length);
 
-instr_type get_instr_type(uint32_t instr);
+instr_type get_instr_type(uint32_t *instr);
 
 uint32_t rotate_right(uint32_t n, unsigned int rot_val);
 

@@ -4,11 +4,10 @@
 #include "type_definitions.h"
 #include "utils.h"
 
-#define Z_FLAG 0b10
+#define Z_FLAG 0b100
 #define V_FLAG 0b1
+#define C_FLAG 0b10
 #define MULT_BITS 0x00000090
-#define PC_REGISTER 15
-#define CPSR_REGISTER 16
 
 //sign extension
 int32_t sign_extend_26(int32_t extendable) {
@@ -71,7 +70,6 @@ instr_type get_instr_type(uint32_t *instr) {
 			return BRANCH;
 			break;
 		default:
-			printf("Instruction may not be supported.\n");
 			return EXIT_FAILURE;
 	}
 

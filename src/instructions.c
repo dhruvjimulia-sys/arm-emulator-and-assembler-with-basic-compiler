@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include "utils.h"
 
 int32_t shift(uint32_t n, unsigned int shift_type, unsigned int shift_amount, 
