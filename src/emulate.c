@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #define MEM_SIZE 65536
 #define REGISTERS 17
@@ -34,19 +35,20 @@ uint8_t reverse(uint8_t b) {
 
 uint8_t* load(char filename[]) {
 	FILE *fp;
-	
+
 	fp = fopen(filename, "rb");
 	fseek(fp, 0, SEEK_END);
 	uint64_t filesize = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 
-	uint8_t* instructions = (uint8_t *) malloc(filesize);
-	fread(instructions, 1, filesize, fp); 	
+	uint8_t* instructions = malloc(filesize);
+	assert(instructions);
+	fread(instructions, 1, filesize, fp);
 	fclose(fp);
 
 
 	printf("%ld\n", filesize / BYTES_PER_INSTRUCTION);
-	
+
 	for (int i = 0; i < filesize; i++) {
 		instructions[i] = reverse(instructions[i]);
 		for (int j = 0; j < 8; j++) {
@@ -56,7 +58,7 @@ uint8_t* load(char filename[]) {
 		}
 		printf("\n");
 	}
-	
+
 	return instructions;
 }
 
@@ -102,7 +104,7 @@ bool condition_check(uint32_t type) {
 		default :
 			printf("wrong condition code");
 			return false;
-	}	
+	}
 
 }
 
@@ -114,9 +116,9 @@ int32_t sign_extend_26(int32_t extendable) {
 //return true: clear pipeline
 //return false: leave pipeline intact
 bool process_instructions(uint8_t* instruction_bytes) {
-	uint32_t *instruction = (uint32_t *) realloc(instruction_bytes, BITS_PER_INSTRUCTION);
+	uint32_t *instruction = realloc(instruction_bytes, BITS_PER_INSTRUCTION);
         uint32_t first4bits = create_mask(31, 28, instruction);
-        uint32_t second4bits = create_mask(24, 27, instruction); 
+        uint32_t second4bits = create_mask(24, 27, instruction);
         static const uint8_t PIPELINE_CORRECTION = 8;
 	// Branch
 	// Remember to change 10 to the enum Nada made
@@ -126,7 +128,7 @@ bool process_instructions(uint8_t* instruction_bytes) {
                         if (offset < 0) {
                                 offset = sign_extend_26(offset);
                         }
-		
+
                         processor.registers[PC_REGISTER] += offset - PIPELINE_CORRECTION;
 			return true;
                 }
@@ -150,8 +152,8 @@ bool is_all_zero(uint8_t* arr, uint64_t length) {
 }
 
 void emulator_loop(uint8_t* instructions) {
-	uint8_t* fetched = (uint8_t*) malloc(BYTES_PER_INSTRUCTION);
-	uint8_t* decoded = (uint8_t*) malloc(BYTES_PER_INSTRUCTION);
+	uint8_t fetched[BYTES_PER_INSTRUCTION];
+	uint8_t decoded[BYTES_PER_INSTRUCTION];
 	bool decoded_valid = false;
 	bool execute_valid = false;
 
@@ -173,7 +175,7 @@ void emulator_loop(uint8_t* instructions) {
 			}
 			for (int i = 0; i < BYTES_PER_INSTRUCTION; i++) {
 				decoded[i] = fetched[i];
-			} 
+			}
 			execute_valid = true;
 		}
 
@@ -211,5 +213,6 @@ int main(int argc, char **argv) {
 	}
 	uint8_t* instructions = load(argv[1]);
 	emulator_loop(instructions);
+	free(instructions);
 	return EXIT_SUCCESS;
 }
