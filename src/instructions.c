@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
+#include <stdbool.h>
 #include "utils.h"
 #include "emulate.c"
 
@@ -42,7 +43,7 @@ int32_t shift(uint32_t n, unsigned int shift_type, unsigned int shift_amount,
 int shift_rm_register(uint32_t *instr, struct Processor processor, int set_cpsr) {
 	unsigned int rm = create_mask(0, 3, instr);
 	//for the optional part where shift is specified by rs register
-	unsigned int bit4 = create_mask(4, 4, instr); 
+	bool bit4 = extract_bit(4, instr); 
 	unsigned int shift_type = create_mask(5, 6, instr);
 	unsigned int shift_amount;
 	uint32_t *cpsr_reg = &processor.registers[CPSR_REGISTER];
@@ -62,7 +63,7 @@ int shift_rm_register(uint32_t *instr, struct Processor processor, int set_cpsr)
 void execute_data_processing_instruction(struct Processor processor, uint32_t *instr) {
 
 	int opcode = create_mask(21, 24, instr);
-	int set_cpsr = create_mask(20, 20, instr);
+	bool set_cpsr = extract_bit(20, instr);
 	uint32_t rm_val = create_mask(0, 11, instr);
 	int32_t op2;
 	int32_t result;
@@ -70,7 +71,7 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t *i
 	uint32_t rn_val = processor.registers[create_mask(16, 19, instr)];	
 	uint32_t *cpsr_reg = &processor.registers[CPSR_REGISTER];
 
-	if (create_mask(25, 25, instr)) {
+	if (extract_bit(25, instr)) {
 		/* operand2 is an immediate constant */
 		rm_val = create_mask(0, 7, instr);
 		//get rotation value
@@ -161,11 +162,11 @@ void execute_multiply_instruction(struct Processor processor, uint32_t *instr) {
 	uint32_t rm_val = processor.registers[create_mask(0, 3, instr)];
 	uint32_t rs_val = processor.registers[create_mask(8, 11, instr)];
 	uint32_t *cpsr_reg = &processor.registers[CPSR_REGISTER];
-	int32_t set_cpsr = create_mask(20, 20, instr);
+	bool set_cpsr = extract_bit(20, instr);
 	
 	uint64_t product = rm_val * rs_val;
 
-	unsigned int acc_cond_bit = create_mask(21, 21,instr);
+	bool acc_cond_bit = extract_bit(21, instr);
 	
 	/* multiply and accumulate instruction */
 	if (acc_cond_bit) {
@@ -184,9 +185,9 @@ void execute_multiply_instruction(struct Processor processor, uint32_t *instr) {
 }
 
 void execute_single_data_transfer(struct Processor processor, uint32_t *instr) {
-	int p_bit = create_mask(24, 24, instr);
-	int u_bit = create_mask(23, 23, instr);
-	int l_bit = create_mask(20,20, instr);
+	bool p_bit = extract_bit(24, instr);
+	bool u_bit = extract_bit(23, instr);
+	bool l_bit = extract_bit(20, instr);
 	unsigned int offset = create_mask(0, 11, instr);
 	int rd_index = create_mask(12, 15, instr);
 	int rn_index = create_mask(16, 19, instr);
@@ -194,7 +195,7 @@ void execute_single_data_transfer(struct Processor processor, uint32_t *instr) {
 	uint32_t *base_reg = &processor.registers[rn_index];
 
 
-	if (create_mask(25, 25, instr)) {
+	if (extract_bit(25, instr)) {
 		// offset interpreted as a shifted register
 		offset = shift_rm_register(instr, processor, 0);
 	}

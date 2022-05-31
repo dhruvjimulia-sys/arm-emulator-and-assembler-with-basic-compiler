@@ -1,8 +1,20 @@
-#include "type_definitions.h"
 #include <stdint.h>
+#include "type_definitions.h"
 
 #ifndef EMUL_UTILS_H
 #define EMUL_UTILS_H
+
+int32_t sign_extend_26(int32_t extendable);
+
+uint8_t reverse(uint8_t b);
+
+bool extract_bit(uint8_t position, uint32_t* instruction);
+
+uint32_t create_mask(uint8_t start, uint8_t finish, uint32_t* instruction);
+
+void clear_array(uint8_t* arr, uint64_t length);
+
+bool is_all_zero(uint8_t* arr, uint64_t length)''
 
 instr_type get_instr_type(uint32_t instr);
 
