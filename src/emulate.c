@@ -81,7 +81,7 @@ bool condition_check(uint32_t type) {
 
 	bool n = extract_bit(N_POS, &processor.registers[CPSR_REGISTER]);
     bool z = extract_bit(Z_POS, &processor.registers[CPSR_REGISTER]);
-	bool c = extract_bit(C_POS, &processor.registers[CPSR_REGISTER]);
+	//bool c = extract_bit(C_POS, &processor.registers[CPSR_REGISTER]);
     bool v = extract_bit(V_POS, &processor.registers[CPSR_REGISTER]);
 
     switch (type) {
@@ -186,6 +186,18 @@ void emulator_loop(uint8_t* instructions) {
 	}
 
 	/* Print processor status */
+	printf("Memory:\n");
+	for (int i = 0; i < MEM_SIZE; i++) {
+		if (processor.memory[i] != 0) {
+			printf("Memory at position %X: ", i);
+			printf("%X\n", processor.memory[i]);
+		}
+	}
+	printf("\nRegisters:\n");
+	for (int j = 0; j < REGISTERS; j++) {
+		printf("Register %d has value: ", j);
+		printf("%X\n", processor.registers[j]);
+	}
 }
 
 int main(int argc, char **argv) {
