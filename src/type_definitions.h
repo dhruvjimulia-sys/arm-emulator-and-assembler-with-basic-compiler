@@ -14,7 +14,6 @@ typedef enum InstructionType {
 	MULTIPLY,
 	TRANSFER,
 	BRANCH,
-	NO_OPERATION = 0xffffffff
 } instr_type;
 
 enum Flags {

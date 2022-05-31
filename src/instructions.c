@@ -1,8 +1,7 @@
 #include "type_definitions.h"
 #include "utils.h"
 #include "instructions.h"
-
-struct Processor processor;
+#include <stdio.h>
 
 int32_t shift(uint32_t n, uint32_t shift_type, uint32_t shift_amount, 
 			bool set_cpsr, uint32_t *cpsr_reg) {
@@ -39,36 +38,35 @@ int32_t shift(uint32_t n, uint32_t shift_type, uint32_t shift_amount,
 	return result;
 }
 
-uint32_t shift_rm_register(uint32_t *instr, struct Processor processor, bool set_cpsr) {
+uint32_t shift_rm_register(uint32_t *instr, struct Processor* processor, bool set_cpsr) {
 	uint32_t rm = create_mask(0, 3, instr);
 	//for the optional part where shift is specified by rs register
 	bool bit4 = extract_bit(4, instr); 
 	uint32_t shift_type = create_mask(5, 6, instr);
 	uint32_t shift_amount;
-	uint32_t *cpsr_reg = &processor.registers[CPSR_REGISTER];
+	uint32_t *cpsr_reg = &processor->registers[CPSR_REGISTER];
 
 	if (bit4) {
 		//shift amount is specified by rs
 		int rs = create_mask(8, 11, instr);
-		shift_amount = processor.registers[rs] & 0xff;
+		shift_amount = processor->registers[rs] & 0xff;
 	} else {
 		//shift amount is a constant amount
 		shift_amount = create_mask(7, 11, instr);
 	}
 
-	return shift(processor.registers[rm], shift_type, shift_amount, set_cpsr, cpsr_reg);
+	return shift(processor->registers[rm], shift_type, shift_amount, set_cpsr, cpsr_reg);
 }
 
-void execute_data_processing_instruction(struct Processor processor, uint32_t *instr) {
-
-	int opcode = create_mask(21, 24, instr);
+void execute_data_processing_instruction(struct Processor* processor, uint32_t *instr) {
+	uint32_t opcode = create_mask(21, 24, instr);
 	bool set_cpsr = extract_bit(20, instr);
 	uint32_t rm_val = create_mask(0, 11, instr);
 	int32_t op2;
 	int32_t result;
-	uint32_t *dest = &processor.registers[create_mask(12, 15, instr)];
-	uint32_t rn_val = processor.registers[create_mask(16, 19, instr)];	
-	uint32_t *cpsr_reg = &processor.registers[CPSR_REGISTER];
+	uint32_t *dest = &(processor->registers[create_mask(12, 15, instr)]);
+	uint32_t rn_val = processor->registers[create_mask(16, 19, instr)];	
+	uint32_t *cpsr_reg = &(processor->registers[CPSR_REGISTER]);
 
 	if (extract_bit(25, instr)) {
 		/* operand2 is an immediate constant */
@@ -140,7 +138,7 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t *i
 			result = *dest;
 			break;
 		default:
-			printf("Invalid opcode.\n");
+			printf("Invalid opcode %d for data processing instruction.\n", opcode);
 	}
 
 	if (set_cpsr) {	
@@ -149,18 +147,18 @@ void execute_data_processing_instruction(struct Processor processor, uint32_t *i
 	}
 }
 
-void execute_branch_instruction(uint32_t *instr) {
+void execute_branch_instruction(struct Processor* processor, uint32_t *instr) {
 	unsigned int offset = create_mask(0, 23, instr);
 	int32_t dest;
 
 	dest = offset << 2;
-	processor.registers[PC_REGISTER] = dest + 8;
+	processor->registers[PC_REGISTER] = dest + 8;
 }
 
-void execute_multiply_instruction(struct Processor processor, uint32_t *instr) {
-	uint32_t rm_val = processor.registers[create_mask(0, 3, instr)];
-	uint32_t rs_val = processor.registers[create_mask(8, 11, instr)];
-	uint32_t *cpsr_reg = &processor.registers[CPSR_REGISTER];
+void execute_multiply_instruction(struct Processor* processor, uint32_t *instr) {
+	uint32_t rm_val = processor->registers[create_mask(0, 3, instr)];
+	uint32_t rs_val = processor->registers[create_mask(8, 11, instr)];
+	uint32_t *cpsr_reg = &processor->registers[CPSR_REGISTER];
 	bool set_cpsr = extract_bit(20, instr);
 	
 	uint64_t product = rm_val * rs_val;
@@ -169,12 +167,12 @@ void execute_multiply_instruction(struct Processor processor, uint32_t *instr) {
 	
 	/* multiply and accumulate instruction */
 	if (acc_cond_bit) {
-		product += processor.registers[create_mask(12, 15, instr)];
+		product += processor->registers[create_mask(12, 15, instr)];
 	}
 	
 	//truncate product (multiply instruction result) to 32 bits
 	uint32_t product32b = product;
-	processor.registers[create_mask(16, 19, instr)] = product32b;
+	processor->registers[create_mask(16, 19, instr)] = product32b;
 
 	//set condition codes
 	if (set_cpsr) {
@@ -183,15 +181,15 @@ void execute_multiply_instruction(struct Processor processor, uint32_t *instr) {
 	}
 }
 
-void execute_single_data_transfer(struct Processor processor, uint32_t *instr) {
+void execute_single_data_transfer(struct Processor* processor, uint32_t *instr) {
 	bool p_bit = extract_bit(24, instr);
 	bool u_bit = extract_bit(23, instr);
 	bool l_bit = extract_bit(20, instr);
 	unsigned int offset = create_mask(0, 11, instr);
 	int rd_index = create_mask(12, 15, instr);
 	int rn_index = create_mask(16, 19, instr);
-	uint32_t *dest = &processor.registers[rd_index];
-	uint32_t *base_reg = &processor.registers[rn_index];
+	uint32_t *dest = &processor->registers[rd_index];
+	uint32_t *base_reg = &processor->registers[rn_index];
 
 
 	if (extract_bit(25, instr)) {
