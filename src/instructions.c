@@ -1,9 +1,8 @@
-#include <stdlib.h>
-#include <stdint.h>
-#include <assert.h>
-#include <stdbool.h>
-#include <stdio.h>
+#include "type_definitions.h"
 #include "utils.h"
+#include "instructions.h"
+
+struct Processor processor;
 
 int32_t shift(uint32_t n, unsigned int shift_type, unsigned int shift_amount, 
 			uint32_t set_cpsr, uint32_t *cpsr_reg) {

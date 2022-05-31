@@ -2,7 +2,8 @@
 #include <stdint.h>
 #include <assert.h>
 #include <stdbool.h>
-#include "utils.h"
+#include <stdio.h>
+// "instructions.h" requires "utils.h"
 
 #ifndef INSTRUCTIONS_H
 #define INSTRUCTIONS_H

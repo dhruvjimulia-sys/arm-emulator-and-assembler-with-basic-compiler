@@ -1,6 +1,3 @@
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdbool.h>
 #include "type_definitions.h"
 #include "utils.h"
 
@@ -8,6 +5,7 @@
 #define V_FLAG 0b1
 #define C_FLAG 0b10
 #define MULT_BITS 0x00000090
+
 
 //sign extension
 int32_t sign_extend_26(int32_t extendable) {

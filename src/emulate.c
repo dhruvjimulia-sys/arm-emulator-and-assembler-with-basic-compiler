@@ -1,11 +1,7 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include "utils.h"
 #include "type_definitions.h"
+#include "utils.h"
 #include "instructions.h"
-
+#include "emulate.h"
 
 #define BYTES_PER_INSTRUCTION 4
 #define BITS_PER_INSTRUCTION 32

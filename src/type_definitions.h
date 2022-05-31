@@ -1,5 +1,4 @@
-#ifndef EMUL_ENUMS_H
-#define EMUL_ENUMS_H
+#include <stdint.h>
 
 #define MEM_SIZE 65536
 #define REGISTERS 17
@@ -7,7 +6,7 @@
 struct Processor {
 	uint8_t memory[MEM_SIZE];
 	uint32_t registers[REGISTERS];
-} processor;
+};
 
 typedef enum InstructionType {
 	DATA_PROCESS,
@@ -26,5 +25,3 @@ enum Flags {
 	le = 13,
 	al = 14,
 };
-
-#endif

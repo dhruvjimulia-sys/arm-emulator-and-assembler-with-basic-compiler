@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "type_definitions.h"
+#include <stdlib.h>
+// "utils.h" requires "type_definitions.h"
 
 #ifndef UTILS_H
 #define UTILS_H

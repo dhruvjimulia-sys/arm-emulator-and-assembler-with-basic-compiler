@@ -2,8 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "utils.h"
-#include "type_definitions.h"
+// "emulate.h" requires "instructions.h"
 
 #ifndef EMULATE_H
 #define EMULATE_H
