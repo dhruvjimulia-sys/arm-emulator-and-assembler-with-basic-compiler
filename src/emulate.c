@@ -8,6 +8,7 @@
 #define PC_REGISTER 15
 #define CPSR_REGISTER 16
 #define BYTES_PER_INSTRUCTION 4
+#define BITS_PER_INSTRUCTION 32
 
 struct Processor {
 	uint8_t memory[MEM_SIZE];
@@ -15,14 +16,14 @@ struct Processor {
 } processor;
 
 enum Flags {
-	eq = 0;
-	ne = 1;
-	ge = 10;
-	lt = 11;
-	gt = 12;
-	le = 13;
-	al = 14;
-}
+	eq = 0,
+	ne = 1,
+	ge = 10,
+	lt = 11,
+	gt = 12,
+	le = 13,
+	al = 14,
+};
 
 uint8_t reverse(uint8_t b) {
    b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
@@ -42,7 +43,9 @@ uint8_t* load(char filename[]) {
 	uint8_t* instructions = (uint8_t *) malloc(filesize);
 	fread(instructions, 1, filesize, fp); 	
 	fclose(fp);
-	printf("%ld\n", filesize/4);
+
+
+	printf("%ld\n", filesize / BYTES_PER_INSTRUCTION);
 	
 	for (int i = 0; i < filesize; i++) {
 		instructions[i] = reverse(instructions[i]);
@@ -57,7 +60,7 @@ uint8_t* load(char filename[]) {
 	return instructions;
 }
 
-uint32_t createMask(uint8_t start, uint8_t finish, uint32_t* instruction) {
+uint32_t create_mask(uint8_t start, uint8_t finish, uint32_t* instruction) {
         uint32_t r;
         r = ((1 << (finish - start)) - 1) << start;
         return (r & *(instruction)) >> start;
@@ -65,18 +68,23 @@ uint32_t createMask(uint8_t start, uint8_t finish, uint32_t* instruction) {
 
 
 bool extract_bit(uint8_t position, uint32_t* instruction) {
-	return createMask(position, position, instruction) == 1;
+	return create_mask(position, position, instruction) == 1;
 }
 
 bool condition_check(uint32_t type) {
 
+	static const uint8_t N_POS = 31;
+	static const uint8_t Z_POS = 30;
+	static const uint8_t C_POS = 29;
+	static const uint8_t V_POS = 28;
 
-	bool n = extract_bit(31, processor.registers[CPSR_REGISTER]);
-        bool z = extract_bit(30, processor.registers[CPSR_REGISTER]);
-	bool c = extract_bit(29, processor.registers[CPSR_REGISTER]);
-        bool v = extract_bit(28, processor.registers[CPSR_REGISTER]);
 
-        switch (type) {
+	bool n = extract_bit(N_POS, &processor.registers[CPSR_REGISTER]);
+    bool z = extract_bit(Z_POS, &processor.registers[CPSR_REGISTER]);
+	bool c = extract_bit(C_POS, &processor.registers[CPSR_REGISTER]);
+    bool v = extract_bit(V_POS, &processor.registers[CPSR_REGISTER]);
+
+    switch (type) {
 		case eq :
 			return z;
 		case ne :
@@ -106,18 +114,20 @@ int32_t sign_extend_26(int32_t extendable) {
 //return true: clear pipeline
 //return false: leave pipeline intact
 bool process_instructions(uint8_t* instruction_bytes) {
-	uint32_t *instruction = (uint32_t *) realloc(instruction, 32);
-        uint32_t first4bits = createMask(31, 28, instruction);
-        uint32_t second4bits = createMask(24, 27, instruction); 
-        // Branch
+	uint32_t *instruction = (uint32_t *) realloc(instruction_bytes, BITS_PER_INSTRUCTION);
+        uint32_t first4bits = create_mask(31, 28, instruction);
+        uint32_t second4bits = create_mask(24, 27, instruction); 
+        static const uint8_t PIPELINE_CORRECTION = 8;
+	// Branch
 	// Remember to change 10 to the enum Nada made
         if (second4bits == 10) {
-                if condition_check(first4bits) {
-                        int32_t offset = (int32_t) (createMask(0, 23, instruction)) << 2;
+                if (condition_check(first4bits)) {
+                        int32_t offset = (int32_t) (create_mask(0, 23, instruction)) << 2;
                         if (offset < 0) {
                                 offset = sign_extend_26(offset);
                         }
-                        processor.registers[PC_REGISTER] += offset - 8;
+		
+                        processor.registers[PC_REGISTER] += offset - PIPELINE_CORRECTION;
 			return true;
                 }
         }
