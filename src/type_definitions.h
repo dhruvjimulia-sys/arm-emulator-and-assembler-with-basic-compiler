@@ -9,13 +9,13 @@ struct Processor {
 	uint32_t registers[REGISTERS];
 } processor;
 
-typedef enum InstructionType {
+enum InstructionType {
 	DATA_PROCESS,
 	MULTIPLY,
 	TRANSFER,
 	BRANCH,
 	NO_OPERATION = 0xffffffff
-} instr_type;
+};
 
 enum Flags {
 	eq = 0,

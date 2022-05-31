@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "utils.h"
+#include "type_definitions.h"
 
 int32_t shift(uint32_t n, unsigned int shift_type, unsigned int shift_amount, 
 			uint32_t set_cpsr, uint32_t *cpsr_reg) {
