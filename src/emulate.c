@@ -1,39 +1,26 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
+#include "type_definitions.h"
+#include "utils.h"
+#include "instructions.h"
+#include "emulate.h"
 
-#define MEM_SIZE 65536
-#define REGISTERS 17
-#define PC_REGISTER 15
 #define BYTES_PER_INSTRUCTION 4
-
-struct Processor {
-	uint8_t memory[MEM_SIZE];
-	uint32_t registers[REGISTERS];
-} processor;	
-
-
-uint8_t reverse(uint8_t b) {
-   b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-   b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-   b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-   return b;
-}
+#define BITS_PER_INSTRUCTION 32
 
 uint8_t* load(char filename[]) {
 	FILE *fp;
-	
+
 	fp = fopen(filename, "rb");
 	fseek(fp, 0, SEEK_END);
 	uint64_t filesize = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 
-	uint8_t* instructions = (uint8_t *) malloc(filesize);
-	fread(instructions, 1, filesize, fp); 	
+	uint8_t* instructions = malloc(filesize);
+	assert(instructions);
+	fread(instructions, 1, filesize, fp);
 	fclose(fp);
-	printf("%ld\n", filesize/4);
-	
+
+	printf("%ld\n", filesize / BYTES_PER_INSTRUCTION);
+
 	for (int i = 0; i < filesize; i++) {
 		instructions[i] = reverse(instructions[i]);
 		for (int j = 0; j < 8; j++) {
@@ -43,58 +30,74 @@ uint8_t* load(char filename[]) {
 		}
 		printf("\n");
 	}
-	
 	return instructions;
 }
 
-uint8_t createMask(uint8_t start, uint8_t finish) {
-        uint8_t r;
-        r = ((1 << (finish - start)) - 1) << start
-        return r;
-}
+bool condition_check(uint32_t type) {
 
-bool condition_check(uint8_t type) {
-        switch 
+	static const uint8_t N_POS = 31;
+	static const uint8_t Z_POS = 30;
+	static const uint8_t C_POS = 29;
+	static const uint8_t V_POS = 28;
+
+	bool n = extract_bit(N_POS, &processor.registers[CPSR_REGISTER]);
+ 	bool z = extract_bit(Z_POS, &processor.registers[CPSR_REGISTER]);
+	//bool c = extract_bit(C_POS, &processor.registers[CPSR_REGISTER]);
+ 	bool v = extract_bit(V_POS, &processor.registers[CPSR_REGISTER]);
+
+	switch (type) {
+		case eq :
+			return z;
+		case ne :
+			return !z;
+		case ge :
+			return n == v;
+		case lt :
+			return n != v;
+		case gt :
+			return !z && (n == v);
+		case le :
+			return z || (n != v);
+		case al :
+			return true;
+		default :
+			printf("wrong condition code");
+			return false;
+	}
+
 }
 
 //return true: clear pipeline
 //return false: leave pipeline intact
-bool process_instructions(uint8_t* instruction) {
-        uint8_t first4bits = createMask(31, 28) & *(instruction);
-        uint8_t second4bits = createMask(24, 27) & *(instruction); 
-        // Branch
-        if (second4bits == 10) {
-                if condition_check(first4bits) {
-                        int32_t offset;
-                        offset = (createMask(0, 23) & *(instruction)) << 2;
-                        if (createMask(25,25) & offset) {
-                                offset += 4227858432U;
-                        }
-                        PC_REGISTER += offset - 8;
-                }
-        }
-}
-
-
-
-void clear_array(uint8_t* arr, uint64_t length) {
-	for (int i = 0; i < length; i++) {
-		arr[i] = 0;
-	}
-}
-
-bool is_all_zero(uint8_t* arr, uint64_t length) {
-	for (int i = 0; i < length; i++) {
-		if (arr[i] != 0) {
+bool process_instructions(uint8_t* instruction_bytes) {
+	uint32_t *instruction = realloc(instruction_bytes, BITS_PER_INSTRUCTION);
+	uint32_t first4bits = create_mask(31, 28, instruction);
+	static const uint8_t PIPELINE_CORRECTION = 8;
+	switch (get_instr_type(instruction)) {
+		case BRANCH :
+			if (condition_check(first4bits)) {
+				int32_t offset = (int32_t) (create_mask(0, 23, instruction)) << 2;
+				if (offset < 0) {
+					offset = sign_extend_26(offset);
+				}
+				processor.registers[PC_REGISTER] += offset - PIPELINE_CORRECTION;
+				return true;
+			}
 			return false;
-		}
-	}
-	return true;
+		case TRANSFER :
+			execute_single_data_transfer(processor, instruction);
+		case MULTIPLY :
+			execute_multiply_instruction(processor, instruction);
+		case DATA_PROCESS :
+			execute_data_processing_instruction(processor, instruction);
+		default:
+			exit(EXIT_FAILURE);
+	}		
 }
 
 void emulator_loop(uint8_t* instructions) {
-	uint8_t* fetched = (uint8_t*) malloc(BYTES_PER_INSTRUCTION);
-	uint8_t* decoded = (uint8_t*) malloc(BYTES_PER_INSTRUCTION);
+	uint8_t fetched[BYTES_PER_INSTRUCTION];
+	uint8_t decoded[BYTES_PER_INSTRUCTION];
 	bool decoded_valid = false;
 	bool execute_valid = false;
 
@@ -116,7 +119,7 @@ void emulator_loop(uint8_t* instructions) {
 			}
 			for (int i = 0; i < BYTES_PER_INSTRUCTION; i++) {
 				decoded[i] = fetched[i];
-			} 
+			}
 			execute_valid = true;
 		}
 
@@ -129,6 +132,18 @@ void emulator_loop(uint8_t* instructions) {
 	}
 
 	/* Print processor status */
+	printf("Memory:\n");
+	for (int i = 0; i < MEM_SIZE; i++) {
+		if (processor.memory[i] != 0) {
+			printf("Memory at position %X: ", i);
+			printf("%X\n", processor.memory[i]);
+		}
+	}
+	printf("\nRegisters:\n");
+	for (int j = 0; j < REGISTERS; j++) {
+		printf("Register %d has value: ", j);
+		printf("%X\n", processor.registers[j]);
+	}
 }
 
 int main(int argc, char **argv) {
@@ -142,5 +157,6 @@ int main(int argc, char **argv) {
 	}
 	uint8_t* instructions = load(argv[1]);
 	emulator_loop(instructions);
+	free(instructions);
 	return EXIT_SUCCESS;
 }
