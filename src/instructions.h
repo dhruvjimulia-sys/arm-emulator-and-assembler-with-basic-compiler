@@ -1,3 +1,9 @@
+#include <stdlib.h>
+#include <stdint.h>
+#include <assert.h>
+#include <stdbool.h>
+#include "utils.h"
+
 #ifndef INSTRUCTIONS_H
 #define INSTRUCTIONS_H
 
