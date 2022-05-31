@@ -6,8 +6,8 @@
 #include "utils.h"
 #include "type_definitions.h"
 
-int32_t shift(uint32_t n, unsigned int shift_type, unsigned int shift_amount, 
-			uint32_t set_cpsr, uint32_t *cpsr_reg) {
+int32_t shift(uint32_t n, uint32_t shift_type, uint32_t shift_amount, 
+			bool set_cpsr, uint32_t *cpsr_reg) {
 	int32_t cout = 0;
 	int result = 0;
 	
@@ -41,12 +41,12 @@ int32_t shift(uint32_t n, unsigned int shift_type, unsigned int shift_amount,
 	return result;
 }
 
-int shift_rm_register(uint32_t *instr, struct Processor processor, int set_cpsr) {
-	unsigned int rm = create_mask(0, 3, instr);
+uint32_t shift_rm_register(uint32_t *instr, struct Processor processor, bool set_cpsr) {
+	uint32_t rm = create_mask(0, 3, instr);
 	//for the optional part where shift is specified by rs register
 	bool bit4 = extract_bit(4, instr); 
-	unsigned int shift_type = create_mask(5, 6, instr);
-	unsigned int shift_amount;
+	uint32_t shift_type = create_mask(5, 6, instr);
+	uint32_t shift_amount;
 	uint32_t *cpsr_reg = &processor.registers[CPSR_REGISTER];
 
 	if (bit4) {
