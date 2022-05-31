@@ -1,11 +1,11 @@
 #include "type_definitions.h"
 #include "utils.h"
+#include <stdint.h>
 
-#define Z_FLAG 0b100
-#define V_FLAG 0b1
-#define C_FLAG 0b10
+#define Z_FLAG 0x4
+#define V_FLAG 0x1
+#define C_FLAG 0x2
 #define MULT_BITS 0x00000090
-
 
 //sign extension
 int32_t sign_extend_26(int32_t extendable) {
@@ -13,12 +13,19 @@ int32_t sign_extend_26(int32_t extendable) {
 	return extendable + SIGN_EXTEND;
 }
 
+uint32_t change_endianness(uint32_t index) {
+	return ((index / BYTES_PER_INSTRUCTION) + 1) * BYTES_PER_INSTRUCTION - 1 - (index % BYTES_PER_INSTRUCTION);
+}
+
 //reverses loaded bytes
-uint8_t reverse(uint8_t b) {
-   b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-   b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-   b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-   return b;
+uint32_t reverse_bits(uint32_t num, uint8_t num_bits) {
+    uint32_t reverse_num = 0;
+    for (uint8_t i = 0; i < num_bits; i++) {
+        if ((num & (1 << i))) {
+            reverse_num |= 1 << ((num_bits - 1) - i);
+		}
+    }
+    return reverse_num;
 }
 
 //extract bit and return boolean
@@ -28,9 +35,10 @@ bool extract_bit(uint8_t position, uint32_t* instruction) {
 
 //create a bit mask for 32b instruction
 uint32_t create_mask(uint8_t start, uint8_t finish, uint32_t* instruction) {
-        uint32_t r;
-        r = ((1 << (finish - start)) - 1) << start;
-        return (r & *(instruction)) >> start;
+	start = BITS_PER_INSTRUCTION - 1 - start;
+	finish = BITS_PER_INSTRUCTION - 1 - finish;
+	uint32_t r = ((1 << (start - finish + 1)) - 1) << finish;
+	return reverse_bits((r & *instruction) >> finish, start - finish + 1);
 }
 
 //clear the contents of array (to all zero)
@@ -41,7 +49,7 @@ void clear_array(uint8_t* arr, uint64_t length) {
 }
 
 //checks if array contains all zeroes
-bool is_all_zero(uint8_t* arr, uint64_t length) {
+bool is_all_zero(uint8_t* arr, uint32_t length) {
 	for (int i = 0; i < length; i++) {
 		if (arr[i] != 0) {
 			return false;
