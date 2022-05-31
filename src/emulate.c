@@ -12,6 +12,8 @@
 #define BYTES_PER_INSTRUCTION 4
 #define BITS_PER_INSTRUCTION 32
 
+struct Processor processor;
+
 uint8_t* load(char filename[]) {
 	FILE *fp;
 
@@ -94,11 +96,11 @@ bool process_instructions(uint8_t* instruction_bytes, instr_type type) {
                 	}
 			return false;
 		case TRANSFER :
-			//
+			execute_single_data_transfer(processor, instruction);
 		case MULTIPLY :
-			//
+			execute_multiply_instruction(processor, instruction);
 		case DATA_PROCESS :
-			//
+			execute_data_processing_instruction(processor, instruction);
 		default:
 			exit(EXIT_FAILURE);
 	}		
