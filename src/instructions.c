@@ -158,26 +158,27 @@ void execute_branch_instruction(struct Processor* processor, uint32_t *instr) {
 void execute_multiply_instruction(struct Processor* processor, uint32_t *instr) {
 	uint32_t rm_val = processor->registers[create_mask(0, 3, instr)];
 	uint32_t rs_val = processor->registers[create_mask(8, 11, instr)];
+	uint32_t rn_val = processor->registers[create_mask(12, 15, instr)];
 	uint32_t *cpsr_reg = &processor->registers[CPSR_REGISTER];
 	bool set_cpsr = extract_bit(20, instr);
-	
-	uint64_t product = rm_val * rs_val;
+
+	uint32_t product = rm_val * rs_val;
 
 	bool acc_cond_bit = extract_bit(21, instr);
-	
-	/* multiply and accumulate instruction */
-	if (acc_cond_bit) {
-		product += processor->registers[create_mask(12, 15, instr)];
-	}
-	
+
 	//truncate product (multiply instruction result) to 32 bits
-	uint32_t product32b = product;
-	processor->registers[create_mask(16, 19, instr)] = product32b;
+
+	if (acc_cond_bit) {
+                product += rn_val;
+        }
+
+
+	processor->registers[create_mask(16, 19, instr)] = product;
 
 	//set condition codes
 	if (set_cpsr) {
-		set_z(cpsr_reg, product32b);
-		set_n(cpsr_reg, product32b);
+		set_z(cpsr_reg, product);
+		set_n(cpsr_reg, product);
 	}
 }
 

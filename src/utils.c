@@ -6,7 +6,7 @@
 #define Z_FLAG 0x40000000
 #define V_FLAG 0x10000000
 #define C_FLAG 0x20000000
-#define MULT_BITS 0x00000090
+#define MULT_BITS 0x00000009
 
 //sign extension
 int32_t sign_extend_26(int32_t extendable) {
