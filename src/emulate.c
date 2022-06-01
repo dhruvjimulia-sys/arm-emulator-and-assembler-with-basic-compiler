@@ -146,7 +146,7 @@ void emulator_loop(uint8_t* instructions) {
 			} else {
 				printf("$%-3d", j);
 			}
-			printf(":%11d (0x%08x)\n", processor.registers[j], processor.registers[j]);
+			printf(": %10d (0x%08x)\n", processor.registers[j], processor.registers[j]);
 		}
 	}
 	printf("Non-zero memory:\n");	
