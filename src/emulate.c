@@ -37,7 +37,7 @@ bool condition_check(uint32_t type) {
 
 	static const uint8_t N_POS = 31;
 	static const uint8_t Z_POS = 30;
-	static const uint8_t C_POS = 29;
+	//static const uint8_t C_POS = 29;
 	static const uint8_t V_POS = 28;
 
 	bool n = extract_bit(N_POS, &processor.registers[CPSR_REGISTER]);

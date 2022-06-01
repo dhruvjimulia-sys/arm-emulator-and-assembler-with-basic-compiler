@@ -10,11 +10,14 @@ all: $(BUILD)
 
 assemble: assemble.o
 
-emulate:	emulate.o type_definitions.o utils.o instructions.o
-emulate.o:	type_definitions.h utils.h instructions.h emulate.h
-instructions.o:	type_definitions.h utils.h instructions.h
-utils.o:	type_definitions.h utils.h
-type_definitions.o:	type_definitions.h
+emulate:	emulate.o type_definitions.h utils.o instructions.o
+			$(CC) emulate.o type_definitions.h utils.o instructions.o -o emulate
+emulate.o:	emulate.c emulate.h type_definitions.h utils.h instructions.h
+			$(CC) $(CFLAGS) -c emulate.c
+instructions.o:	instructions.c type_definitions.h utils.h instructions.h
+			$(CC) $(CFLAGS) -c instructions.c
+utils.o:	utils.c type_definitions.h utils.h
+			$(CC) $(CFLAGS) -c utils.c
 
 clean:
 	rm -f $(wildcard *.o)

@@ -1,9 +1,9 @@
 #include "type_definitions.h"
 #include "utils.h"
 
-#define Z_FLAG 0b100
-#define V_FLAG 0b1
-#define C_FLAG 0b10
+#define Z_FLAG 0x4
+#define V_FLAG 0x2
+#define C_FLAG 0x2
 #define MULT_BITS 0x00000090
 
 
