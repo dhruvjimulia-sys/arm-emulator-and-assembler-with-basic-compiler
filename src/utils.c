@@ -1,6 +1,7 @@
 #include "type_definitions.h"
 #include "utils.h"
 #include <stdint.h>
+#include <assert.h>
 
 #define Z_FLAG 0x4
 #define V_FLAG 0x1
@@ -35,6 +36,7 @@ bool extract_bit(uint8_t position, uint32_t* instruction) {
 
 //create a bit mask for 32b instruction
 uint32_t create_mask(uint8_t start, uint8_t finish, uint32_t* instruction) {
+	assert(start <= finish);
 	start = BITS_PER_INSTRUCTION - 1 - start;
 	finish = BITS_PER_INSTRUCTION - 1 - finish;
 	uint32_t r = ((1 << (start - finish + 1)) - 1) << finish;

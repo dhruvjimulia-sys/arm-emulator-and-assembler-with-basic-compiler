@@ -70,8 +70,7 @@ void print_instruction_bits(uint32_t* instruction) {
 //return false: leave pipeline intact
 bool process_instructions(uint8_t* instruction_bytes) {
 	uint32_t *instruction = (uint32_t *) instruction_bytes;
-    uint32_t first4bits = create_mask(31, 28, instruction);
-    static const uint8_t PIPELINE_CORRECTION = 8;
+    	uint32_t first4bits = create_mask(28, 31, instruction);
 	switch (get_instr_type(instruction)) {
 		case BRANCH :
 			if (condition_check(first4bits)) {
@@ -79,7 +78,7 @@ bool process_instructions(uint8_t* instruction_bytes) {
 				if (offset < 0) {
 					offset = sign_extend_26(offset);
 				}
-				processor.registers[PC_REGISTER] += offset - PIPELINE_CORRECTION;
+				processor.registers[PC_REGISTER] += offset;
 				return true;
 			}
 			return false;
