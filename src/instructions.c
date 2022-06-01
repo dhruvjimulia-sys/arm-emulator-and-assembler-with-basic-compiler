@@ -1,7 +1,9 @@
 #include "type_definitions.h"
 #include "utils.h"
 #include "instructions.h"
+#include <stdint.h>
 #include <stdio.h>
+#include <limits.h>
 
 int32_t shift(uint32_t n, uint32_t shift_type, uint32_t shift_amount, 
 			bool set_cpsr, uint32_t *cpsr_reg) {
@@ -199,7 +201,14 @@ void execute_single_data_transfer(struct Processor* processor, uint32_t *instr) 
 
 	if (l_bit) {
 		//ldr, load word from memory
-		*dest = reverse_bits(processor->memory[change_endianness(base_reg)], 32);
+		uint32_t reversed = 0;
+		for (int i = BYTES_PER_INSTRUCTION; i >= 0; i--) {
+			reversed += reverse_bits(processor->memory[change_endianness(base_reg + i)], CHAR_BIT);
+			if (i != 0) {
+				reversed <<= CHAR_BIT;
+			}
+		}
+		*dest = reversed;
 	} else {
 		//str, store word in memory
 		processor->memory[base_reg] = *dest;

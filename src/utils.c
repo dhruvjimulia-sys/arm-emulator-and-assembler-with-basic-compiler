@@ -2,6 +2,7 @@
 #include "utils.h"
 #include <stdint.h>
 #include <assert.h>
+#include <stdio.h>
 
 #define Z_FLAG 0x40000000
 #define V_FLAG 0x10000000
@@ -110,4 +111,11 @@ void set_c(uint32_t *cpsr, int32_t set) {
 //set V condition code
 void set_v(uint32_t *cpsr, int32_t result) {
 	*cpsr |= V_FLAG;
+}
+
+void print_instruction_bits(uint32_t* instruction) {
+	for (int j = BITS_PER_INSTRUCTION - 1; j >= 0; j--) {
+		printf("%d", extract_bit(j, instruction));
+	}
+	printf("\n");
 }

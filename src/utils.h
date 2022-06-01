@@ -35,3 +35,5 @@ void set_z(uint32_t *cpsr, int32_t result);
 void set_c(uint32_t *cpsr, int32_t set_value);
 
 void set_v(uint32_t *cpsr, int32_t result);
+
+void print_instruction_bits(uint32_t* instruction);

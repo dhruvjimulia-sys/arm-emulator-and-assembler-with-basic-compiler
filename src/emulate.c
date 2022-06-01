@@ -59,13 +59,6 @@ bool condition_check(uint32_t type) {
 	}
 }
 
-void print_instruction_bits(uint32_t* instruction) {
-	for (int j = BITS_PER_INSTRUCTION - 1; j >= 0; j--) {
-		printf("%d", extract_bit(j, instruction));
-	}
-	printf("\n");
-}
-
 //return true: clear pipeline
 //return false: leave pipeline intact
 bool process_instructions(uint8_t* instruction_bytes) {
