@@ -28,14 +28,14 @@ void load(char filename[]) {
 
 bool condition_check(uint32_t type) {
 
-	static const uint8_t N_POS = 0;
-	static const uint8_t Z_POS = 1;
-	// static const uint8_t C_POS = 2;
-	static const uint8_t V_POS = 3;
+	static const uint8_t N_POS = 31;
+	static const uint8_t Z_POS = 30;
+	//static const uint8_t C_POS = 29;
+	static const uint8_t V_POS = 28;
 
 	bool n = extract_bit(N_POS, &processor.registers[CPSR_REGISTER]);
  	bool z = extract_bit(Z_POS, &processor.registers[CPSR_REGISTER]);
-	//bool c = extract_bit(C_POS, &processor.registers[CPSR_REGISTER]);
+	bool c = extract_bit(C_POS, &processor.registers[CPSR_REGISTER]);
  	bool v = extract_bit(V_POS, &processor.registers[CPSR_REGISTER]);
 
 	switch (type) {

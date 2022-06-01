@@ -96,7 +96,7 @@ void execute_data_processing_instruction(struct Processor* processor, uint32_t *
 
 			if (set_cpsr) {
 				//set C flag if subtraction produced a borrow
-				set_c(cpsr_reg,rn_val < op2_unsigned);
+				set_c(cpsr_reg,rn_val >= op2_unsigned);
 			}
 			break;
 		case 3: /* rsub, reverse sub, operand2 - rn */
@@ -104,7 +104,7 @@ void execute_data_processing_instruction(struct Processor* processor, uint32_t *
 			result = *dest;
 			if (set_cpsr) {
 				//set C flag if subtraction produced a borrow
-				set_c(cpsr_reg,rn_val > op2);
+				set_c(cpsr_reg,rn_val <= op2);
 			}
 			break;
 		case 4: /* add, rn + operan2 */
@@ -127,7 +127,7 @@ void execute_data_processing_instruction(struct Processor* processor, uint32_t *
 
 			if (set_cpsr) {
 				//set C flag if subtraction produced a borrow
-				set_c(cpsr_reg,rn_val > op2_unsigned);
+				set_c(cpsr_reg,rn_val >= op2_unsigned);
 			}
 			break;
 		case 12: /* orr, rn OR operand2 */

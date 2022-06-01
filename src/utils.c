@@ -3,9 +3,9 @@
 #include <stdint.h>
 #include <assert.h>
 
-#define Z_FLAG 0x4
-#define V_FLAG 0x1
-#define C_FLAG 0x2
+#define Z_FLAG 0x40000000
+#define V_FLAG 0x10000000
+#define C_FLAG 0x20000000
 #define MULT_BITS 0x00000090
 
 //sign extension
