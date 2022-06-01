@@ -160,6 +160,7 @@ void emulator_loop(uint8_t* instructions) {
 			printf("\n");
 		}
 	}
+	printf("\n");
 }
 
 int main(int argc, char **argv) {
