@@ -7,7 +7,7 @@ int32_t shift(uint32_t n, uint32_t shift_type, uint32_t shift_amount,
 			bool set_cpsr, uint32_t *cpsr_reg) {
 	int32_t cout = 0;
 	int result = 0;
-	
+
 	switch(shift_type) {
 		case 0: /* lsl */
 			cout = n & (1 << (32 - shift_amount));
@@ -190,8 +190,7 @@ void execute_single_data_transfer(struct Processor* processor, uint32_t *instr) 
 	int rd_index = create_mask(12, 15, instr);
 	int rn_index = create_mask(16, 19, instr);
 	uint32_t *dest = &processor->registers[rd_index];
-	uint32_t *base_reg = &processor->registers[rn_index];
-
+	uint32_t base_reg = processor->registers[rn_index];
 
 	if (extract_bit(25, instr)) {
 		// offset interpreted as a shifted register
@@ -200,10 +199,10 @@ void execute_single_data_transfer(struct Processor* processor, uint32_t *instr) 
 
 	if (l_bit) {
 		//ldr, load word from memory
-		*dest = *((uint32_t*) base_reg);
+		*dest = reverse_bits(processor->memory[change_endianness(base_reg)], 32);
 	} else {
 		//str, store word in memory
-		*((uint32_t*) base_reg) = *dest;
+		processor->memory[base_reg] = *dest;
 	}
 
 	if (p_bit == 0) {
