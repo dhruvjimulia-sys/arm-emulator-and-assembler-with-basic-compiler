@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 // "utils.h" requires "type_definitions.h"
+#include "type_definitions.h"
 
 #define SP_REGISTER 13
 #define LR_REGISTER 14
