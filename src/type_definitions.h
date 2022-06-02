@@ -13,7 +13,7 @@ typedef enum InstructionType {
 	DATA_PROCESS,
 	MULTIPLY,
 	TRANSFER,
-	BRANCH,
+	BRANCH
 } instr_type;
 
 enum Flags {
