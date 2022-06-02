@@ -217,9 +217,6 @@ void execute_single_data_transfer(struct Processor* processor, uint32_t *instr) 
 			//str, store word in memory
 			for (int i = BYTES_PER_INSTRUCTION - 1; i >= 0; i--) {
 				uint32_t pos = *base_reg + i + net_offset;
-				//printf("%u\n", change_endianness(change_endianness(pos, 0), (net_offset + *base_reg) % 4));
-				//printf("%u\n", change_endianness(pos,0));
-				//printf("%u\n", pos);
 				processor->memory[change_endianness(change_endianness(pos, (net_offset + *base_reg) % 4), 0)] = create_mask(i * 8, (i + 1) * 8 - 1, dest);
 			}
 		}

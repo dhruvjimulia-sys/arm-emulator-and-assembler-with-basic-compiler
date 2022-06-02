@@ -67,10 +67,8 @@ bool process_instructions(uint8_t* instruction_bytes) {
 	switch (get_instr_type(instruction)) {
 		case BRANCH :
 			if (condition_check(first4bits)) {
-				int32_t offset = (int32_t) (create_mask(0, 23, instruction)) << 2;
-				if (offset < 0) {
-					offset = sign_extend_26(offset);
-				}
+				// printf("BRANCH\n");
+				int32_t offset = (int32_t) sign_extend((create_mask(0, 23, instruction)) << 2, 26);
 				processor.registers[PC_REGISTER] += offset;
 				return true;
 			}

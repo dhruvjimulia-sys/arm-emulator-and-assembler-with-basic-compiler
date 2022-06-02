@@ -10,9 +10,9 @@
 #define MULT_BITS 0x00000009
 
 //sign extension
-int32_t sign_extend_26(int32_t extendable) {
-	static const int SIGN_EXTEND = 4227858432U;
-	return extendable + SIGN_EXTEND;
+int32_t sign_extend(int32_t extendable, uint8_t num_bits) {
+	uint32_t m = 1 << (num_bits - 1);
+	return (extendable ^ m) - m;
 }
 
 uint32_t change_endianness(uint32_t index, uint8_t offset) {
@@ -98,6 +98,8 @@ void set_n(uint32_t *cpsr, int32_t result) {
 void set_z(uint32_t *cpsr, int32_t result) {
 	if (result == 0) {
 		*cpsr |= Z_FLAG;
+	} else {
+		*cpsr &= !Z_FLAG;
 	}
 }
 
