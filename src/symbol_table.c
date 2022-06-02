@@ -7,7 +7,6 @@
 
 #define TABLE_SIZE 211
 
-//destroy hash table and free up space
 void free_hash_table(hash_table *symbol_table) {
 	for (unsigned int i = 0; i < symbol_table->size; i++) {
 		free((void*) symbol_table->entries[i]->symbol);
@@ -39,7 +38,6 @@ hash_table *create_hash_table(void) {
 	return symbol_table;
 }
 
-//hash function for symbols
 unsigned int hash(char *s, unsigned int size_of_table) {
 	unsigned int hash_val = 0;
 	while (*s != '\0') {
@@ -148,10 +146,10 @@ uint32_t lookup(char *s, hash_table *symbol_table) {
 	return -1;
 }
 
-//rehash entries (used in resizing table)
 void rehash(hash_table *symbol_table, entry **rehash_entries, unsigned int new_size){
 	for (unsigned int i = 0; i < symbol_table->size; i++) {
 		entry *curr_entry = symbol_table->entries[i];
+		//rehash all currently stored keys
 		if (curr_entry->symbol != NULL) {
 			insert(curr_entry->symbol, curr_entry->address, rehash_entries, new_size, symbol_table);
 		}

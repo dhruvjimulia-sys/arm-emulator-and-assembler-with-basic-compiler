@@ -1,9 +1,7 @@
-#include "type_definitions.h"
-#include "utils.h"
-#include "instructions.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <limits.h>
+#include "instructions.h"
 
 int32_t shift(uint32_t n, uint32_t shift_type, uint32_t shift_amount, 
 			bool set_cpsr, uint32_t *cpsr_reg) {
