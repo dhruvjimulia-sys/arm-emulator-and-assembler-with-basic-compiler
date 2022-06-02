@@ -99,7 +99,7 @@ void set_z(uint32_t *cpsr, int32_t result) {
 	if (result == 0) {
 		*cpsr |= Z_FLAG;
 	} else {
-		*cpsr &= !Z_FLAG;
+		*cpsr &= ~Z_FLAG;
 	}
 }
 
