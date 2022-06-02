@@ -22,7 +22,7 @@ void load(char filename[]) {
 	fclose(fp);
 
 	for (int i = 0; i < filesize; i++) {
-		processor.memory[i] = reverse_bits(instructions[change_endianness(i)], CHAR_BIT);
+		processor.memory[i] = reverse_bits(instructions[change_endianness(i, 0)], CHAR_BIT);
 	}
 }
 
@@ -147,7 +147,7 @@ void emulator_loop(uint8_t* instructions) {
 		if (!is_all_zero(processor.memory + i, BYTES_PER_INSTRUCTION)) {
 			printf("0x%08x: 0x", i);
 			for (uint32_t j = 0; j < 4; j++) {
-				printf("%02x", reverse_bits(processor.memory[change_endianness(i + j)], CHAR_BIT));
+				printf("%02x", reverse_bits(processor.memory[change_endianness(i + j, 0)], CHAR_BIT));
 			}
 			printf("\n");
 		}

@@ -12,7 +12,7 @@
 
 int32_t sign_extend_26(int32_t extendable);
 
-uint32_t change_endianness(uint32_t index);
+uint32_t change_endianness(uint32_t index, uint8_t offset);
 
 uint32_t reverse_bits(uint32_t b, uint8_t num_bits);
 

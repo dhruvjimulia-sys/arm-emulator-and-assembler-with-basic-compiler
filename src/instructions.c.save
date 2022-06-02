@@ -1,9 +1,7 @@
 #include "type_definitions.h"
 #include "utils.h"
 #include "instructions.h"
-#include <stdint.h>
 #include <stdio.h>
-#include <limits.h>
 
 int32_t shift(uint32_t n, uint32_t shift_type, uint32_t shift_amount, 
 			bool set_cpsr, uint32_t *cpsr_reg) {
@@ -78,7 +76,8 @@ void execute_data_processing_instruction(struct Processor* processor, uint32_t *
 		op2 = rotate_right(rm_val, rot_val);
 	} else {
 		/* operand is shifted register */
-		op2 = shift_rm_register(instr, processor, set_cpsr);
+		op2 = shift_rm_register(instr, process
+or, set_cpsr);
 	}
 
 	uint32_t op2_unsigned = op2;
@@ -134,7 +133,6 @@ void execute_data_processing_instruction(struct Processor* processor, uint32_t *
 			break;
 		case 12: /* orr, rn OR operand2 */
 			result = rn_val | op2;
-			*dest = result;
 			break;
 		case 13: /* mov, operand2 is moved, Rn is ignored */
 			*dest = op2;
@@ -189,53 +187,33 @@ void execute_single_data_transfer(struct Processor* processor, uint32_t *instr) 
 	bool p_bit = extract_bit(24, instr);
 	bool u_bit = extract_bit(23, instr);
 	bool l_bit = extract_bit(20, instr);
-	bool i_bit = extract_bit(25, instr);
-	uint32_t offset = create_mask(0, 11, instr);
+	unsigned int offset = create_mask(0, 11, instr);
 	int rd_index = create_mask(12, 15, instr);
 	int rn_index = create_mask(16, 19, instr);
 	uint32_t *dest = &processor->registers[rd_index];
-	uint32_t* base_reg = &processor->registers[rn_index];
+	uint32_t base_reg = processor->registers[rn_index];
 
-	if (i_bit) {
+	if (extract_bit(25, instr)) {
 		// offset interpreted as a shifted register
 		offset = shift_rm_register(instr, processor, 0);
 	}
 
-	int32_t net_offset = !p_bit ? 0 : (u_bit ? offset : -offset);
-
-
-	if (change_endianness(*base_reg + BYTES_PER_INSTRUCTION + net_offset, 0) < MEM_SIZE) {
-		if (l_bit) {
-			//ldr, load word from memory
-			uint32_t reversed = 0;
-			for (int i = BYTES_PER_INSTRUCTION; i >= 0; i--) {
-				reversed += reverse_bits(processor->memory[change_endianness(*base_reg + i + net_offset, 0)], CHAR_BIT);
-				if (i != 0) {
-					reversed <<= CHAR_BIT;
-				}
-			}
-			*dest = reversed;
-		} else {
-			//str, store word in memory
-			for (int i = BYTES_PER_INSTRUCTION - 1; i >= 0; i--) {
-				uint32_t pos = *base_reg + i + net_offset;
-				//printf("%u\n", change_endianness(change_endianness(pos, 0), (net_offset + *base_reg) % 4));
-				//printf("%u\n", change_endianness(pos,0));
-				//printf("%u\n", pos);
-				processor->memory[change_endianness(change_endianness(pos, (net_offset + *base_reg) % 4), 0)] = create_mask(i * 8, (i + 1) * 8 - 1, dest);
-			}
-		}
+	if (l_bit) {
+		//ldr, load word from memory
+		*dest = reverse_bits(processor->memory[change_endianness(base_reg)], 32);
 	} else {
-		printf("Error: Out of bounds memory access at address 0x%08x\n", *base_reg + net_offset);
+		//str, store word in memory
+		processor->memory[base_reg] = *dest;
 	}
 
-	if (!p_bit) {
+	if (p_bit == 0) {
 		//post-indexing
 		assert (rd_index != rn_index);
+
 		if (u_bit) {
-			*base_reg += offset;
+			base_reg += offset;
 		} else {
-			*base_reg -= offset;
+			base_reg -= offset;
 		}
 	}
 }

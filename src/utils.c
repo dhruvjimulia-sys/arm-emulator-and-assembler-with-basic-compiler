@@ -15,8 +15,8 @@ int32_t sign_extend_26(int32_t extendable) {
 	return extendable + SIGN_EXTEND;
 }
 
-uint32_t change_endianness(uint32_t index) {
-	return ((index / BYTES_PER_INSTRUCTION) + 1) * BYTES_PER_INSTRUCTION - 1 - (index % BYTES_PER_INSTRUCTION);
+uint32_t change_endianness(uint32_t index, uint8_t offset) {
+	return (((index - offset) / BYTES_PER_INSTRUCTION) + 1) * BYTES_PER_INSTRUCTION - 1 - ((index - offset) % BYTES_PER_INSTRUCTION) + offset;
 }
 
 //reverses loaded bytes
