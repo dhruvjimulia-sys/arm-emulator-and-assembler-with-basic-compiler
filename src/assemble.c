@@ -46,7 +46,7 @@ char *load_assembly(char[] filename){
 			address = 4*address;
 			// truncates the string before : character
 			buffer[strlen(buffer)-2]='\0';
-			insert(buffer,address, symbol_table->entries);
+			insert(buffer,address, symbol_table->entries, symbol_table->size, symbol_table);
 	
 		} else {
 			address++;

@@ -1,4 +1,3 @@
-#include "type_definitions.h"
 #include "utils.h"
 #include <stdint.h>
 #include <assert.h>
