@@ -1,7 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+// remember to include nada's file for the hash table
+#include "symbol_table.h"
+
 #define MAX_LINE_SIZE 512
+
+
 
 //printing binary instructions onto the destination file
 void binary_writer(char* dest_file, uint32_t *binary, uint32_t cursor){
@@ -20,16 +25,30 @@ void binary_writer(char* dest_file, uint32_t *binary, uint32_t cursor){
 	fclose(fp);
 }
 
+hash_table *symbol_table = create_hash_table();
+
+boolean islabel(char *line){
+	return line[strlen(line)-2] == ':';
+}
 
 char *load_assembly(char[] filename){
 	FILE *fp = fopen(filename,"r");
-	assert(flp!=null);
+	assert(fp != null);
 
 	char buffer[MAX_LINE_SIZE];
 	char *read = fgets(buffer,MAX_LINE_SIZE,fp);
+	uint32_t address = 0x0;
 	while (read!=null){
 		// use the read value from the buffer
+		if (islabel(buffer)){
+			address = 4*address;
+			buffer[strlen(buffer)-2]='\0';
+			insert(buffer,address, symbol_table->entries);
+	
+		}
+
 		read = fgets(buffer,MAX_LINE_SIZE,fp);
+		address++;
 	}
 	fclose(fp);
 }
