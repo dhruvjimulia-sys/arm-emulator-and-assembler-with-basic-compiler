@@ -7,24 +7,21 @@
 
 int32_t shift(uint32_t n, uint32_t shift_type, uint32_t shift_amount, 
 			bool set_cpsr, uint32_t *cpsr_reg) {
-	int32_t cout = 0;
+	uint32_t cout = shift_amount != 0 ? create_mask(0, shift_amount - 1, &n) : 0;
 	int result = 0;
 
 	switch(shift_type) {
 		case 0: /* lsl */
-			cout = n & (1 << (32 - shift_amount));
+			cout = shift_amount != 0 ? create_mask(BITS_PER_INSTRUCTION - shift_amount, BITS_PER_INSTRUCTION - 1, &n) : 0;
 			result = n << shift_amount;
 			break;
 		case 1: /* lsr */
-			cout = n & (1 << (shift_amount - 1));
 			result = n >> shift_amount;
 			break;
 		case 2: /* asr */
-			cout = n & (1 << (shift_amount - 1));
 			result = ((int) n) >> shift_amount;
 			break;
 		case 3: /* ror */
-			cout = n & (1 << (shift_amount - 1));
 			result = rotate_right(n, shift_amount);
 			break;
 		default:
@@ -120,6 +117,7 @@ void execute_data_processing_instruction(struct Processor* processor, uint32_t *
 			break;
 		case 8: /* tst, and (but result is not written) */
 			result = rn_val & op2;
+			set_c(cpsr_reg, 0);
 			break;
 		case 9: /* teq, eor (but result is not written) */
 			result = rn_val ^ op2;
