@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
+#include <string.h>
+#include <stdbool.h>
 
-// remember to include nada's file for the hash table
 #include "symbol_table.h"
 
 #define MAX_LINE_SIZE 512
@@ -18,7 +20,7 @@ void binary_writer(char* dest_file, uint32_t *binary, uint32_t cursor){
 	// 3rd argument depends on how we are writing to the file - if it is in the form of an array, 3rd arg is length of array
 	fwrite(binary,4,1,fp);
 	if (ferrror(fp)){
-		perror("Error in writing to file");
+		printf("Error in writing to file");
 		exit(EXIT_FAILURE);
 	}
 
@@ -42,6 +44,7 @@ char *load_assembly(char[] filename){
 		// use the read value from the buffer
 		if (islabel(buffer)){
 			address = 4*address;
+			// truncates the string before :
 			buffer[strlen(buffer)-2]='\0';
 			insert(buffer,address, symbol_table->entries);
 	
@@ -60,7 +63,7 @@ int main(int argc, char **argv) {
 	       	printf("Incorrect no. of arguments supplied!");
 		return EXIT_FAILURE;
 	}
-	read_file(argv[1]);
+	load_assembly(argv[1]);
 	// begin the assembler loop
 	return EXIT_SUCCESS;
 }
