@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-// "emulate.h" requires "instructions.h"
+#include "instructions.h"
 
 extern struct Processor processor;
 

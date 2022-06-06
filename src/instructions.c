@@ -1,6 +1,6 @@
+#include "instructions.h"
 #include "type_definitions.h"
 #include "utils.h"
-#include "instructions.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>

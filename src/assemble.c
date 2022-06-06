@@ -3,7 +3,6 @@
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
-
 #include "symbol_table.h"
 
 #define MAX_LINE_SIZE 512
@@ -36,7 +35,8 @@ boolean islabel(char *line){
 char *load_assembly(char[] filename){
 	FILE *fp = fopen(filename,"r");
 	assert(fp != null);
-
+	
+	//first pass over source code
 	char buffer[MAX_LINE_SIZE];
 	char *read = fgets(buffer,MAX_LINE_SIZE,fp);
 	uint32_t address = 0x0;
@@ -44,14 +44,15 @@ char *load_assembly(char[] filename){
 		// use the read value from the buffer
 		if (islabel(buffer)){
 			address = 4*address;
-			// truncates the string before :
+			// truncates the string before : character
 			buffer[strlen(buffer)-2]='\0';
-			insert(buffer,address, symbol_table->entries);
+			insert(buffer,address, symbol_table->entries, symbol_table->size, symbol_table);
 	
+		} else {
+			address++;
 		}
 
 		read = fgets(buffer,MAX_LINE_SIZE,fp);
-		address++;
 	}
 	fclose(fp);
 }

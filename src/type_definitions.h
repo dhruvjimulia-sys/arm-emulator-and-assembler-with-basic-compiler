@@ -1,3 +1,6 @@
+#ifndef TYPE_DEFINITIONS
+#define TYPE_DEFINITIONS
+
 #include <stdint.h>
 
 #define MEM_SIZE 65536
@@ -26,3 +29,5 @@ enum Flags {
 	le = 13,
 	al = 14,
 };
+
+#endif
