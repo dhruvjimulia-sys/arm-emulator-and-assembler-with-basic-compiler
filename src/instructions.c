@@ -1,9 +1,15 @@
 #include "type_definitions.h"
 #include "utils.h"
 #include "instructions.h"
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <limits.h>
+
+#define GPIO_START 0x20200000
+#define GPIO_END 0x20200008
+#define GPIO_CLEAR 0x20200028
+#define GPIO_ON 0X2020001c
 
 int32_t shift(uint32_t n, uint32_t shift_type, uint32_t shift_amount, 
 			bool set_cpsr, uint32_t *cpsr_reg) {
@@ -170,8 +176,8 @@ void execute_multiply_instruction(struct Processor* processor, uint32_t *instr) 
 	//truncate product (multiply instruction result) to 32 bits
 
 	if (acc_cond_bit) {
-                product += rn_val;
-        }
+		product += rn_val;
+    }
 
 
 	processor->registers[create_mask(16, 19, instr)] = product;
@@ -201,8 +207,19 @@ void execute_single_data_transfer(struct Processor* processor, uint32_t *instr) 
 
 	int32_t net_offset = !p_bit ? 0 : (u_bit ? offset : -offset);
 
-
-	if (change_endianness(*base_reg + BYTES_PER_INSTRUCTION + net_offset, 0) < MEM_SIZE) {
+	uint32_t mem_location = *base_reg + net_offset;
+	if (mem_location >= GPIO_START && mem_location <= GPIO_END) {
+		uint32_t diff = mem_location - GPIO_START;
+		assert(diff % 4 == 0);
+		uint32_t start = (diff / 4) * 10;
+		uint32_t end = start + 9;
+		*dest = mem_location;
+		printf("One GPIO pin from %d to %d has been accessed\n", start, end);
+	} else if (mem_location == GPIO_CLEAR) {
+		printf("PIN OFF\n");
+	} else if (mem_location == GPIO_ON) {
+		printf("PIN ON\n");
+	} else if (change_endianness(*base_reg + BYTES_PER_INSTRUCTION + net_offset, 0) < MEM_SIZE) {
 		if (l_bit) {
 			//ldr, load word from memory
 			uint32_t reversed = 0;

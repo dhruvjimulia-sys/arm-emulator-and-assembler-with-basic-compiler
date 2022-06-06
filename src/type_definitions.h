@@ -2,6 +2,7 @@
 
 #define MEM_SIZE 65536
 #define REGISTERS 17
+#define GPIO_SIZE 20
 
 //processor structure storing state of processor
 struct Processor {
