@@ -10,10 +10,10 @@ all: $(BUILD)
 
 assemble: assemble.o
 
-emulate:	emulate.o utils.o instructions.o
-emulate.o:	type_definitions.h utils.h instructions.h emulate.h
-instructions.o:	type_definitions.h utils.h instructions.h
-utils.o:	type_definitions.h utils.h
+emulate:	emulate.o emulator_utils.o instructions.o
+emulate.o:	type_definitions.h emulator_utils.h instructions.h emulate.h
+instructions.o:	type_definitions.h emulator_utils.h instructions.h
+emulator_utils.o:	type_definitions.h emulator_utils.h
 
 clean:
 	rm -f $(wildcard *.o)

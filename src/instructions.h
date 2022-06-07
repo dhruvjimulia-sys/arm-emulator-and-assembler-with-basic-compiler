@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include "utils.h"
+#include "emulator_utils.h"
 #include "type_definitions.h"
 
 //implementation of the barrel shifter
