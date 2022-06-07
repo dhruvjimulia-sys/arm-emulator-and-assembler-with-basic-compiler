@@ -1,6 +1,6 @@
 #include "instructions.h"
 #include "type_definitions.h"
-#include "utils.h"
+#include "emulator_utils.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -11,7 +11,7 @@
 #define GPIO_CLEAR 0x20200028
 #define GPIO_ON 0X2020001c
 
-int32_t shift(uint32_t n, uint32_t shift_type, uint32_t shift_amount, 
+int32_t shift(uint32_t n, uint32_t shift_type, uint32_t shift_amount,
 			bool set_cpsr, uint32_t *cpsr_reg) {
 	uint32_t cout = shift_amount != 0 ? create_mask(0, shift_amount - 1, &n) : 0;
 	int result = 0;
@@ -70,7 +70,7 @@ void execute_data_processing_instruction(struct Processor* processor, uint32_t *
 	int32_t op2;
 	int32_t result;
 	uint32_t *dest = &(processor->registers[create_mask(12, 15, instr)]);
-	uint32_t rn_val = processor->registers[create_mask(16, 19, instr)];	
+	uint32_t rn_val = processor->registers[create_mask(16, 19, instr)];
 	uint32_t *cpsr_reg = &(processor->registers[CPSR_REGISTER]);
 
 	if (extract_bit(25, instr)) {
@@ -154,12 +154,14 @@ void execute_data_processing_instruction(struct Processor* processor, uint32_t *
 	}
 }
 
-void execute_branch_instruction(struct Processor* processor, uint32_t *instr) {
-	unsigned int offset = create_mask(0, 23, instr);
-	int32_t dest;
-
-	dest = offset << 2;
-	processor->registers[PC_REGISTER] = dest + 8;
+bool execute_branch_instruction(struct Processor* processor, uint32_t *instr) {
+	uint32_t first4bits = create_mask(28, 31, instr);
+	if (condition_check(first4bits, processor)) {
+		int32_t offset = (int32_t) sign_extend((create_mask(0, 23, instr)) << 2, 26);
+		processor->registers[PC_REGISTER] += offset;
+		return true;
+	}
+	return false;
 }
 
 void execute_multiply_instruction(struct Processor* processor, uint32_t *instr) {
