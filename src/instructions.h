@@ -15,7 +15,7 @@ uint32_t shift_rm_register(uint32_t *instr, struct Processor* processor, bool se
 
 void execute_data_processing_instruction(struct Processor* processor, uint32_t *instr);
 
-void execute_branch_instruction(struct Processor* processor, uint32_t *instr);
+bool execute_branch_instruction(struct Processor* processor, uint32_t *instr);
 
 void execute_multiply_instruction(struct Processor* processor, uint32_t *instr);
 
