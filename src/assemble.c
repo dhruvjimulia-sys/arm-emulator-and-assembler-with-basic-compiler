@@ -28,18 +28,57 @@ void binary_writer(char* dest_file, uint32_t *binary, uint32_t cursor){
 
 hash_table *symbol_table = create_hash_table();
 
-boolean islabel(char *line){
+bool islabel(char *line){
 	return line[strlen(line)-2] == ':';
+}
+
+char **allocArray (unsigned int rows, unsigned int cols){
+	char** array;
+	unsigned int i;
+
+	array = (char**) malloc (sizeof(char*) * rows );
+	if (!array){
+		return NULL;
+	}
+	array[0] = (char*) malloc (rows*cols*sizeof(char*));
+	if (!array[0]){
+		free(array);
+		return NULL;
+	}
+	for (i=0; i < rows; i++){
+		array[i] = array[i-1] + cols;
+	}
+	return array;
+}
+
+void freeArray(char ** array){
+	free(array[0]);
+	free(array);
 }
 
 char *load_assembly(char[] filename){
 	FILE *fp = fopen(filename,"r");
 	assert(fp != null);
+	int numlines=0;
 	
+	// counting the no. of new lines
+	for (int c = 0; fgetc(fp); c!= EOF; c = fgetc(fp)){
+		if (c == '\n'){++numlines;}
+	}
+
+	// Creating a 2d array of strings to store the read file 
+	char **data = allocArray(numlines,MAX_LINE_SIZE);
+	assert (data != NULL);
+
+
 	//first pass over source code
 	char buffer[MAX_LINE_SIZE];
 	char *read = fgets(buffer,MAX_LINE_SIZE,fp);
+	
+	data[0] = buffer;
+
 	uint32_t address = 0x0;
+	int arrayIndex = 1;
 	while (read!=null){
 		// use the read value from the buffer
 		if (islabel(buffer)){
@@ -51,10 +90,23 @@ char *load_assembly(char[] filename){
 		} else {
 			address++;
 		}
-
+		data[++arrayIndex] = buffer;
 		read = fgets(buffer,MAX_LINE_SIZE,fp);
 	}
+	
 	fclose(fp);
+
+	// 2nd pass, reading from the string array and passing it into the tokenizer
+	for (int i = 0; i < numlines; i++){
+		if (!isLabel(data[i])){
+			// call the tokenizer with data[i]
+			// pass the tokenized structure into the various functions
+			//
+			// TOKENIZED INSTRUCTION SHOULD REPLACE THE LABEL REFERENCES!!!!!!!!!!!!!
+		}
+	}
+
+	freeArray(data);
 }
 
 
