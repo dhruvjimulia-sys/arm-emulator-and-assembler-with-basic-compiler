@@ -7,9 +7,7 @@
 #define BYTES_PER_INSTRUCTION 4
 #define BITS_PER_INSTRUCTION 32
 
-struct Processor processor;
-
-void load(char filename[]) {
+void load(char filename[], struct Processor* processor) {
 	FILE *fp = fopen(filename, "rb");
 	fseek(fp, 0, SEEK_END);
 	uint64_t filesize = ftell(fp);
@@ -17,75 +15,35 @@ void load(char filename[]) {
 	uint8_t instructions[filesize];
 	fread(instructions, 1, filesize, fp);
 	fclose(fp);
-
 	for (int i = 0; i < filesize; i++) {
-		processor.memory[i] = reverse_bits(instructions[change_endianness(i, 0)], CHAR_BIT);
-	}
-}
-
-bool condition_check(uint32_t type) {
-
-	static const uint8_t N_POS = 0;
-	static const uint8_t Z_POS = 1;
-	// static const uint8_t C_POS = 2;
-	static const uint8_t V_POS = 3;
-
-	bool n = extract_bit(N_POS, &processor.registers[CPSR_REGISTER]);
- 	bool z = extract_bit(Z_POS, &processor.registers[CPSR_REGISTER]);
-	//bool c = extract_bit(C_POS, &processor.registers[CPSR_REGISTER]);
- 	bool v = extract_bit(V_POS, &processor.registers[CPSR_REGISTER]);
-
-	switch (type) {
-		case eq :
-			return z;
-		case ne :
-			return !z;
-		case ge :
-			return n == v;
-		case lt :
-			return n != v;
-		case gt :
-			return !z && (n == v);
-		case le :
-			return z || (n != v);
-		case al :
-			return true;
-		default :
-			printf("wrong condition code");
-			return false;
+		processor->memory[i] = reverse_bits(instructions[change_endianness(i, 0)], CHAR_BIT);
 	}
 }
 
 //return true: clear pipeline
 //return false: leave pipeline intact
-bool process_instructions(uint8_t* instruction_bytes) {
+bool process_instructions(uint8_t* instruction_bytes, struct Processor* processor) {
 	uint32_t *instruction = (uint32_t *) instruction_bytes;
-    	uint32_t first4bits = create_mask(28, 31, instruction);
 	switch (get_instr_type(instruction)) {
 		case BRANCH :
-			if (condition_check(first4bits)) {
-				// printf("BRANCH\n");
-				int32_t offset = (int32_t) sign_extend((create_mask(0, 23, instruction)) << 2, 26);
-				processor.registers[PC_REGISTER] += offset;
-				return true;
-			}
-			return false;
+			return execute_branch_instruction(processor, instruction);
 		case TRANSFER :
-			execute_single_data_transfer(&processor, instruction);
+			execute_single_data_transfer(processor, instruction);
 			return false;
 		case MULTIPLY :
-			execute_multiply_instruction(&processor, instruction);
+			execute_multiply_instruction(processor, instruction);
 			return false;
 		case DATA_PROCESS :
-			execute_data_processing_instruction(&processor, instruction);
+			execute_data_processing_instruction(processor, instruction);
 			return false;
 		default:
 			perror("Instruction not identified");
 			return false;
-	}		
+	}
 }
 
-void emulator_loop(uint8_t* instructions) {
+void emulator_loop(struct Processor* processor) {
+	uint8_t* instructions = processor->memory;
 	uint8_t fetched[BYTES_PER_INSTRUCTION];
 	uint8_t decoded[BYTES_PER_INSTRUCTION];
 	bool decoded_valid = false;
@@ -94,7 +52,7 @@ void emulator_loop(uint8_t* instructions) {
 	while (true) {
 		/* Execute */
 		if (execute_valid) {
-			if (process_instructions(decoded)) {
+			if (process_instructions(decoded, processor)) {
 				clear_array(decoded, BYTES_PER_INSTRUCTION);
 				clear_array(fetched, BYTES_PER_INSTRUCTION);
 				decoded_valid = false;
@@ -108,7 +66,7 @@ void emulator_loop(uint8_t* instructions) {
 				decoded[i] = fetched[i];
 			}
 			if (is_all_zero(decoded, BYTES_PER_INSTRUCTION)) {
-				processor.registers[PC_REGISTER] += BYTES_PER_INSTRUCTION;
+				processor->registers[PC_REGISTER] += BYTES_PER_INSTRUCTION;
 				break;
 			}
 			execute_valid = true;
@@ -116,11 +74,11 @@ void emulator_loop(uint8_t* instructions) {
 
 		/* Fetch */
 		for (int i = 0; i < BYTES_PER_INSTRUCTION; i++) {
-			fetched[i] = instructions[processor.registers[PC_REGISTER] + i];
+			fetched[i] = instructions[processor->registers[PC_REGISTER] + i];
 		}
 		decoded_valid = true;
 
-		processor.registers[PC_REGISTER] += BYTES_PER_INSTRUCTION;
+		processor->registers[PC_REGISTER] += BYTES_PER_INSTRUCTION;
 	}
 
 	/* Print processor status */
@@ -134,15 +92,15 @@ void emulator_loop(uint8_t* instructions) {
 			} else {
 				printf("$%-3d", j);
 			}
-			printf(": %10d (0x%08x)\n", processor.registers[j], processor.registers[j]);
+			printf(": %10d (0x%08x)\n", processor->registers[j], processor->registers[j]);
 		}
 	}
-	printf("Non-zero memory:\n");	
+	printf("Non-zero memory:\n");
 	for (uint32_t i = 0; i < MEM_SIZE; i += 4) {
-		if (!is_all_zero(processor.memory + i, BYTES_PER_INSTRUCTION)) {
+		if (!is_all_zero(processor->memory + i, BYTES_PER_INSTRUCTION)) {
 			printf("0x%08x: 0x", i);
 			for (uint32_t j = 0; j < 4; j++) {
-				printf("%02x", reverse_bits(processor.memory[change_endianness(i + j, 0)], CHAR_BIT));
+				printf("%02x", reverse_bits(processor->memory[change_endianness(i + j, 0)], CHAR_BIT));
 			}
 			printf("\n");
 		}
@@ -150,6 +108,7 @@ void emulator_loop(uint8_t* instructions) {
 }
 
 int main(int argc, char **argv) {
+	struct Processor processor = {{0}, {0}};
 	if (argc != 2) {
 		if (argc > 2) {
 			printf("Too many arguments supplied\n");
@@ -158,7 +117,7 @@ int main(int argc, char **argv) {
 		}
 		return EXIT_FAILURE;
 	}
-	load(argv[1]);
-	emulator_loop(processor.memory);
+	load(argv[1], &processor);
+	emulator_loop(&processor);
 	return EXIT_SUCCESS;
 }

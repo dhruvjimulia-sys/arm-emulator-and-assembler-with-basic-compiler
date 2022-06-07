@@ -8,6 +8,39 @@
 #define C_FLAG 0x20000000
 #define MULT_BITS 0x00000009
 
+
+bool condition_check(uint32_t type, struct Processor* processor) {
+
+        static const uint8_t N_POS = 0;
+        static const uint8_t Z_POS = 1;
+        static const uint8_t V_POS = 3;
+
+        bool n = extract_bit(N_POS, processor->registers + CPSR_REGISTER);
+        bool z = extract_bit(Z_POS, processor->registers + CPSR_REGISTER);
+        bool v = extract_bit(V_POS, processor->registers + CPSR_REGISTER);
+
+        switch (type) {
+                case eq :
+                        return z;
+                case ne :
+                        return !z;
+                case ge :
+                        return n == v;
+                case lt :
+                        return n != v;
+                case gt :
+                        return !z && (n == v);
+                case le :
+                        return z || (n != v);
+                case al :
+                        return true;
+                default :
+                        printf("wrong condition code");
+                        return false;
+        }
+}
+
+
 int32_t sign_extend(int32_t extendable, uint8_t num_bits) {
 	uint32_t m = 1 << (num_bits - 1);
 	return (extendable ^ m) - m;

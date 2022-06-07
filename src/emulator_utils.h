@@ -10,6 +10,9 @@
 #define BYTES_PER_INSTRUCTION 4
 #define BITS_PER_INSTRUCTION 32
 
+//check condition flags register
+bool condition_check(uint32_t first4bits, struct Processor* processor);
+
 //sign extension of to 32 bit value
 int32_t sign_extend(int32_t extendable, uint8_t num_bits);
 
