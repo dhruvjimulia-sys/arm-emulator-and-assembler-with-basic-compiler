@@ -1,0 +1,9 @@
+
+#include "assembler_utils.h"
+#include <string.h>
+
+TokenizedInstruction tokenize(char *instruction) {
+	char* token = strtok_r(instruction, " ");
+	while () {
+	}
+}
