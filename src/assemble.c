@@ -9,8 +9,6 @@
 
 #define MAX_LINE_SIZE 512
 
-
-
 //printing binary instructions onto the destination file
 void binary_writer(char* dest_file, uint32_t *binary, uint32_t cursor){
 	// should this be w or wb?
@@ -27,8 +25,6 @@ void binary_writer(char* dest_file, uint32_t *binary, uint32_t cursor){
 
 	fclose(fp);
 }
-
-hash_table *symbol_table = create_hash_table();
 
 bool islabel(char *line){
 	return line[strlen(line)-2] == ':';
@@ -63,16 +59,16 @@ void freeArray(char ** array){
 
 void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_table, uint32_t pc, uint32_t last_address){
 	//call the instruction based on the opcode
-	if (*(instruction -> opcode) <= CMP){
+	if (instruction -> opcode <= CMP){
 		assemble_data_processing(instruction);
 	}
-	else if (*(instruction -> opcode) <= MLA){
+	else if (instruction -> opcode <= MLA){
 		assemble_multiply(instruction);
 	}
-	else if (*(instruction -> opcode) <= STR){
+	else if (instruction -> opcode <= STR){
 		assemble_single_data_transfer(instruction,pc,last_address);
 	}
-	else if (*(instruction -> opcode) <= B){
+	else if (instruction -> opcode <= B){
 		// if 1st operand is a label , replace it with its reference	
 		uint32_t res = lookup(instruction->operand[0],symbol_table);
 		if (res!=-1){
@@ -88,6 +84,10 @@ void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_tabl
 }
 
 void load_assembly(char *filename){
+	//create hash table structure for symbol table
+	hash_table *symbol_table = create_hash_table();
+
+	//open the assembly file
 	FILE *fp = fopen(filename,"r");
 	assert(fp != NULL);
 	int numlines=0;
