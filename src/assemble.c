@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "symbol_table.h"
+#include "assemble_instructions.h"
 
 #define MAX_LINE_SIZE 512
 
@@ -56,6 +57,30 @@ void freeArray(char ** array){
 	free(array);
 }
 
+//typedef uint32_t (*func_pointer)(TokenizedInstruction);
+//func_pointer array_fn_pointers = {assemble_data_processing, assemble_multiply, assemble_single_data_transfer, assemble_branch};
+
+void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_table, uint32_t pc, uint32_t last_address){
+	//call the instruction based on the opcode
+	if (instruction -> opcode <= CMP){
+		assemble_data_processing(instruction);
+	}
+	else if (instruction -> opcode <= MLA){
+		assemble_multiply(instruction);
+	}
+	else if (instruction -> opcode <= STR){
+		assemble_single_data_transfer(instruction,pc,last_address);
+	}
+	else if (instruction -> opcode <= B){
+		// if 1st operand is a label , replace it with its reference	
+		uint32_t res = lookup(instruction->operand[0],symbol_table);
+		if (res!=-1){
+			instruction.operand[i] = res;
+		}
+		assemble_branch(operation,pc)
+	}
+}
+
 char *load_assembly(char[] filename){
 	FILE *fp = fopen(filename,"r");
 	assert(fp != null);
@@ -97,12 +122,16 @@ char *load_assembly(char[] filename){
 	fclose(fp);
 
 	// 2nd pass, reading from the string array and passing it into the tokenizer
+	uint32_t calling_address = 0x0;
 	for (int i = 0; i < numlines; i++){
 		if (!isLabel(data[i])){
 			// call the tokenizer with data[i]
+			TokenizedInstruction *instruct = tokenize(data[i])
 			// pass the tokenized structure into the various functions
-			//
+			call_instruction(instruct,symbol_table,calling_address,address;)
 			// TOKENIZED INSTRUCTION SHOULD REPLACE THE LABEL REFERENCES!!!!!!!!!!!!!
+			calling_address++;
+			free_tokenized_instruction(instruct);
 		}
 	}
 
