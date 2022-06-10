@@ -1,8 +1,8 @@
-#include "emulate.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include "emulate.h"
 
 #define BYTES_PER_INSTRUCTION 4
 #define BITS_PER_INSTRUCTION 32

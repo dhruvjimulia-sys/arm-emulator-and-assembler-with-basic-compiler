@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include "type_definitions.h"
 
+#ifndef EMULATOR_UTILS_H
+#define EMULATOR_UTILS_H
+
 #define SP_REGISTER 13
 #define LR_REGISTER 14
 #define PC_REGISTER 15
@@ -55,3 +58,5 @@ void set_v(uint32_t *cpsr, int32_t result);
 
 //print instruction bits
 void print_instruction_bits(uint32_t* instruction);
+
+#endif
