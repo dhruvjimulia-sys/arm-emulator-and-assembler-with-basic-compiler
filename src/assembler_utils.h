@@ -3,12 +3,6 @@
 #ifndef ASSEMBLER_UTILS_H
 #define ASSEMBLER_UTILS_H
 
-typedef struct {
-	Operation *opcode;
-	char **operand;
-	uint32_t num_operands;
-} TokenizedInstruction;
-
 typedef enum {
 	ADD,
 	SUB,
@@ -34,6 +28,12 @@ typedef enum {
 	BLE,
 	B
 } Operation;
+
+typedef struct {
+        Operation *opcode;
+        char **operand;
+        uint32_t num_operands;
+} TokenizedInstruction;
 
 //rotate value right given amount of times
 static uint32_t rotate_right(uint32_t n, unsigned int shift_amount);
