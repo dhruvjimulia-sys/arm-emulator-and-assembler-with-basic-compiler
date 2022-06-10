@@ -14,12 +14,12 @@
 void binary_writer(char* dest_file, uint32_t *binary, uint32_t cursor){
 	// should this be w or wb?
 	FILE *fp = fopen(dest_file,"wb");
-	assert(fp != null);
+	assert(fp != NULL);
         
 	// fwrite(pointer_of_writing_data, size_of_each_element_in_bytes,no_of_items_to_be_written,filepointer)
 	// 3rd argument depends on how we are writing to the file - if it is in the form of an array, 3rd arg is length of array
 	fwrite(binary,4,1,fp);
-	if (ferrror(fp)){
+	if (ferror(fp)){
 		printf("Error in writing to file");
 		exit(EXIT_FAILURE);
 	}
@@ -62,32 +62,37 @@ void freeArray(char ** array){
 
 void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_table, uint32_t pc, uint32_t last_address){
 	//call the instruction based on the opcode
-	if (instruction -> opcode <= CMP){
+	if (*(instruction -> opcode) <= CMP){
 		assemble_data_processing(instruction);
 	}
-	else if (instruction -> opcode <= MLA){
+	else if (*(instruction -> opcode) <= MLA){
 		assemble_multiply(instruction);
 	}
-	else if (instruction -> opcode <= STR){
+	else if (*(instruction -> opcode) <= STR){
 		assemble_single_data_transfer(instruction,pc,last_address);
 	}
-	else if (instruction -> opcode <= B){
+	else if (*(instruction -> opcode) <= B){
 		// if 1st operand is a label , replace it with its reference	
 		uint32_t res = lookup(instruction->operand[0],symbol_table);
 		if (res!=-1){
-			instruction.operand[i] = res;
+			char buffer[32];
+			snprintf(buffer, sizeof(buffer),"%x",res);
+			instruction->operand[0] = buffer;
 		}
-		assemble_branch(operation,pc)
+		assemble_branch(instruction,pc);
+	}
+	else {
+		printf("Incorrect opcode detected");
 	}
 }
 
-char *load_assembly(char[] filename){
+void load_assembly(char *filename){
 	FILE *fp = fopen(filename,"r");
-	assert(fp != null);
+	assert(fp != NULL);
 	int numlines=0;
 	
 	// counting the no. of new lines
-	for (int c = 0; fgetc(fp); c!= EOF; c = fgetc(fp)){
+	for (int c = fgetc(fp); c!= EOF; c = fgetc(fp)){
 		if (c == '\n'){++numlines;}
 	}
 
@@ -104,7 +109,7 @@ char *load_assembly(char[] filename){
 
 	uint32_t address = 0x0;
 	int arrayIndex = 1;
-	while (read!=null){
+	while (read!=NULL){
 		// use the read value from the buffer
 		if (islabel(buffer)){
 			address = 4*address;
@@ -124,11 +129,11 @@ char *load_assembly(char[] filename){
 	// 2nd pass, reading from the string array and passing it into the tokenizer
 	uint32_t calling_address = 0x0;
 	for (int i = 0; i < numlines; i++){
-		if (!isLabel(data[i])){
+		if (!islabel(data[i])){
 			// call the tokenizer with data[i]
-			TokenizedInstruction *instruct = tokenize(data[i])
+			TokenizedInstruction *instruct = tokenize(data[i]);
 			// pass the tokenized structure into the various functions
-			call_instruction(instruct,symbol_table,calling_address,address;)
+			call_instruction(instruct,symbol_table,calling_address,address);
 			// TOKENIZED INSTRUCTION SHOULD REPLACE THE LABEL REFERENCES!!!!!!!!!!!!!
 			calling_address++;
 			free_tokenized_instruction(instruct);
@@ -136,6 +141,7 @@ char *load_assembly(char[] filename){
 	}
 
 	freeArray(data);
+	free_hash_table(symbol_table);
 }
 
 
@@ -145,7 +151,7 @@ int main(int argc, char **argv) {
 	       	printf("Incorrect no. of arguments supplied!");
 		return EXIT_FAILURE;
 	}
-	load_assembly(argv[1]);
+	//load_assembly(argv[1]);
 	// begin the assembler loop
 	return EXIT_SUCCESS;
 }
