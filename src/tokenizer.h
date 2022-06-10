@@ -1,4 +1,4 @@
-#include "assembler_utils.h"
+#include "assembler_type_definitions.h"
 
 #ifndef TOKENIZER_H
 #define TOKENIZER_H
