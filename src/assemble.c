@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "symbol_table.h"
+#include "tokenizer.h"
 #include "assemble_instructions.h"
 
 #define MAX_LINE_SIZE 512
