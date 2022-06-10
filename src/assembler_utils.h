@@ -1,5 +1,8 @@
 #include <stdint.h>
 
+#ifndef ASSEMBLER_UTILS_H
+#define ASSEMBLER_UTILS_H
+
 typedef struct {
 	Operation *opcode;
 	char **operand;
@@ -33,8 +36,9 @@ typedef enum {
 } Operation;
 
 //rotate value right given amount of times
-static uint32_t rotate_right(uint32_t n, unsigned int shift_amount) {
-  if ((shift_amount &= sizeof(n) * 8 - 1) == 0)
-    return n;
-  return (n << shift_amount) | (n >> (sizeof(n) * 8 - shift_amount));
-}
+static uint32_t rotate_right(uint32_t n, unsigned int shift_amount);
+
+//set necessary bits to 1 in a 32bit value
+void set_bits_to(uint32_t *instr, uint32_t input, unsigned int starting_at);
+
+#endif
