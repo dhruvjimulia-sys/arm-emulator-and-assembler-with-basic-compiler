@@ -1,8 +1,8 @@
-#include "tokenizer.h"
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include "tokenizer.h"
 
 #define MAX_NUMBER_OPERANDS 4
 

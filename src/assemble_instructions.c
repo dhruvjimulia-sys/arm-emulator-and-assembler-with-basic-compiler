@@ -1,9 +1,12 @@
-#include <stdint.h>
-#include "tokenizer.h"
-#include "assembler_utils.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
+#include "assemble_instructions.h"
 
-#define RD_START_BIT 16
-#define RN_START_BIT 12
+#define RD_START_BIT 12
+#define RN_START_BIT 16
+#define PC_REGISTER 0xf
 #define SET_BIT 0x1
 #define S_BIT 20
 #define L_BIT 20
@@ -20,6 +23,8 @@
 #define HEX 16
 #define BRANCH_ONLY_START_BIT 24
 #define BRANCH_ONLY 0xa
+#define MULT_ONLY 0x9
+#define MULT_ONLY_START_BIT 4
 #define OP2_OR_OFFSET 0
 #define SHIFT_TO_IMM 8
 #define LSL_INTEGER_START_BIT 7
@@ -70,7 +75,6 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 		default:
 			printf("Unexpected opcode %x", token_instr->opcode);
 			exit(EXIT_FAILURE);
-
 	}
 
 	set_bits_to(assembled_instr, opcode, OPCODE_START_BIT);
@@ -82,8 +86,8 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 		set_bits_to(assembled_instr, SET_BIT, S_BIT);
 	} else {
 		//set rd register bits in assembled instruction
-                uint32_t rd = strtol(++(token_instr.operand[0]), NULL, DECIMAL);
-                set_bits_to(assembled_instr, rd, RN_START_BIT);
+                uint32_t rd = strtol(++(token_instr->operand[0]), NULL, DECIMAL);
+                set_bits_to(assembled_instr, rd, RD_START_BIT);
 	}
 
 	//instructions that compute results
@@ -96,16 +100,18 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 	
 	if (!(opcode == 0xd)) {
 		//set rn register bits in assembled instruction
-		uint32_t rn = strtol(++(token_instr.operand[i - 1]), NULL, DECIMAL);
-                set_bits_to(assembled_instr, rd, RD_START_BIT);
+		uint32_t rn = strtol(++(token_instr->operand[i - 1]), NULL, DECIMAL);
+                set_bits_to(assembled_instr, rn, RN_START_BIT);
 	}
 
 	if ((token_instr->operand[i])[0] == '#') {
 		//set operand2 field to expression
 		if (token_instr->opcode == LSL) {
+			//set integer part of [PC, #expression]
 			uint32_t expression = strtoul(++(token_instr->operand[i]), NULL, HEX);
 			set_bits_to(assembled_instr, expression, LSL_INTEGER_START_BIT);
 		} else {
+			//if not lsl, set expression
 			set_expression(token_instr->operand[i], assembled_instr);
 		}
 
@@ -123,20 +129,23 @@ uint32_t assemble_multiply(TokenizedInstruction *token_instr) {
 	uint32_t assembled_instr = 0;
 
 	//set rd register
-	uint32_t rd = strtol(++(token_instr.operand[0]), NULL, DECIMAL);
+	uint32_t rd = strtol(++(token_instr->operand[0]), NULL, DECIMAL);
 	set_bits_to(assembled_instr, rd, RN_START_BIT);
 	
 	//set rm register
-	uint32_t rm = strtol(++(token_instr.operand[1]), NULL, DECIMAL);
+	uint32_t rm = strtol(++(token_instr->operand[1]), NULL, DECIMAL);
 	set_bits_to(assembled_instr, rm, 0);
 
 	//set rs register
-	uint32_t rs = strtol(++(token_instr.operand[2]), NULL, DECIMAL);
+	uint32_t rs = strtol(++(token_instr->operand[2]), NULL, DECIMAL);
 	set_bits_to(assembled_instr, rs, 8);
+
+	//set bits specific to multiply instruction
+	set_bits_to(assembled_instr, MULT_ONLY, MULT_ONLY_START_BIT);
 
 	if (token_instr->num_operands == 4) {
 		//set rn register field (if mla)
-		uint32_t rn = strtol(++(token_instr.operand[3]), NULL, DECIMAL);
+		uint32_t rn = strtol(++(token_instr->operand[3]), NULL, DECIMAL);
         	set_bits_to(assembled_instr, rn, RD_START_BIT);
 
 		//set A bit (multiply with accumulate)
@@ -149,13 +158,13 @@ uint32_t assemble_multiply(TokenizedInstruction *token_instr) {
 	return assembled_instr;
 }
 
-uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32_t pc_address, uint32_t total_of_instr) {
+uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32_t pc_address, uint32_t last_address) {
 	uint32_t assembled_instr = 0;
-	char *address_tokens;
+	char **address_tokens = malloc(2 * sizeof(char *));
        	int num_tokens = 1;	
 	
 	//trim off square brackets from address specification
-	char *address_spec = ++(token_instr->operands[1]);
+	char *address_spec = ++(token_instr->operand[1]);
 	address_spec[strlen(address_spec) - 1] = '\0';
 
 	//parse the address specification
@@ -182,12 +191,16 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 				token_instr->opcode = MOV;
 				return assemble_data_processing(token_instr);
 			} else {
-				//pre-indexed address -> set P flag
-				set_bits_to(assembled_instr, SET_BIT, P_BIT);
+				//set pre-indexing flag bit
+                		set_bits_to(assembled_instr, SET_BIT, P_BIT);
 
-				uint32_t offset = 
-				
-				//set offset bits to value
+				//calculate offset
+				uint32_t offset = last_address - (pc_address - 8);
+						
+				//set rn (base register) to PC
+				set_bits_to(assembled_instr, PC_REGISTER, RN_START_BIT);
+
+				//set offset bits
 				set_bits_to(assembled_instr, offset, OP2_OR_OFFSET);
 				
 				return assembled_instr;
@@ -197,6 +210,7 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 
 	//set rn register field
 	uint32_t rn = strtol(++(address_tokens[0]), NULL, DECIMAL);
+	set_bits_to(assembled_instr, rn, RN_START_BIT);
 
 	if (num_tokens == 2) { //pre-indexing
 		set_expression(address_tokens[1], assembled_instr);
@@ -210,7 +224,7 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 	}
 	
 	//set rd register field
-	uint32_t rd = strtol(++(token_instr.operand[0]), NULL, DECIMAL);
+	uint32_t rd = strtol(++(token_instr->operand[0]), NULL, DECIMAL);
         set_bits_to(assembled_instr, rd, RD_START_BIT);	
 
 	return assembled_instr;
@@ -219,7 +233,7 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address) {
 	uint32_t assembled_instr = 0;
 	uint32_t cond_field;
-	uint32_t jump_address = token_instr->operand[0];
+	uint32_t jump_address = atoi(token_instr->operand[0]);
 	uint32_t offset;
 
 	switch(token_instr->opcode) {
@@ -241,7 +255,6 @@ uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address)
 		case BLE:
 			cond_field = 0xd;
 			break;
-		case BAL:
 		case B:
 			cond_field = ALWAYS_COND;
 	}
@@ -270,12 +283,11 @@ void set_expression(char *operand_as_str, uint32_t assembled_instr) {
 
 	//replace magic number?
 	if (num_constant > 0xff) {
-		uint32_t rotate_amount = 0;
-
+		
 		//calculate shift to immediate amount (rotate value)
 		while (num_constant > 0xff) {
 			shift_imm++;
-			rotate_right(num_consant, 2);
+			rotate_right(num_constant, 2);
 		}
 		
 		//set operand immediate value with shift to immediate value
@@ -285,4 +297,14 @@ void set_expression(char *operand_as_str, uint32_t assembled_instr) {
 		//set operand equal to expression
 		set_bits_to(assembled_instr, num_constant, OP2_OR_OFFSET);
 	}
+}
+
+uint32_t rotate_right(uint32_t n, unsigned int shift_amount) {
+  if ((shift_amount &= sizeof(n) * 8 - 1) == 0)
+    return n;
+  return (n << shift_amount) | (n >> (sizeof(n) * 8 - shift_amount));
+}
+
+void set_bits_to(uint32_t instr, uint32_t input, unsigned int starting_at) {
+        instr |= (input << starting_at);
 }

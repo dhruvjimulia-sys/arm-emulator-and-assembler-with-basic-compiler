@@ -9,8 +9,6 @@
 
 #define MAX_LINE_SIZE 512
 
-
-
 //printing binary instructions onto the destination file
 void binary_writer(char* dest_file, uint32_t result, uint32_t address){
 	FILE *fp = fopen(dest_file,"ab");
@@ -27,8 +25,8 @@ void binary_writer(char* dest_file, uint32_t result, uint32_t address){
 	fclose(fp);
 }
 
-void binary_writer_array(char **dest_file, int32_t *result_array, uint32_t address){
 
+void binary_writer_array(char **dest_file, int32_t *result_array, uint32_t address){
 }
 
 bool islabel(char *line){
@@ -63,7 +61,6 @@ void freeArray(char ** array){
 //func_pointer array_fn_pointers = {assemble_data_processing, assemble_multiply, assemble_single_data_transfer, assemble_branch};
 
 void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_table, uint32_t pc, uint32_t last_address, char **argv, int32_t *array_single_data){
-	
 	//call the instruction based on the opcode
 	if (*(instruction -> opcode) <= CMP){
 		uint32_t result = assemble_data_processing(instruction);
@@ -77,7 +74,7 @@ void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_tabl
 		uint32_t result = assemble_single_data_transfer(instruction,pc,last_address,array_single_data);
 		binarywriter(argv[2],result,pc);
 	}
-	else if (*(instruction -> opcode) <= B){
+	else if (instruction -> opcode <= B){
 		// if 1st operand is a label , replace it with its reference	
 		uint32_t res = lookup(instruction->operand[0],symbol_table);
 		if (res!=-1){
