@@ -11,13 +11,13 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr);
 uint32_t assemble_multiply(TokenizedInstruction *token_instr);
 
 //assemble a single data transfer instruction
-uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32_t pc_address, uint32_t last_address);
+uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32_t pc_address, uint32_t last_address, int32_t *eof_expressions);
 
 //assemble a branch instruction
 uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address);
 
 //set operand2 field or offset field to the value of the <#expression>
-void set_expression(char *operand_as_str, uint32_t assembled_instr);
+uint32_t parse_expression(char *operand_as_str);
 
 //rotate value right given amount of times
 uint32_t rotate_right(uint32_t n, unsigned int shift_amount);
