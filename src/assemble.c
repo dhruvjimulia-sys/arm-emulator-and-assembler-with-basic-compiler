@@ -10,20 +10,23 @@
 #define MAX_LINE_SIZE 512
 
 //printing binary instructions onto the destination file
-void binary_writer(char* dest_file, uint32_t *binary, uint32_t cursor){
-	// should this be w or wb?
-	FILE *fp = fopen(dest_file,"wb");
+void binary_writer(char* dest_file, uint32_t result, uint32_t address){
+	FILE *fp = fopen(dest_file,"ab");
 	assert(fp != NULL);
         
 	// fwrite(pointer_of_writing_data, size_of_each_element_in_bytes,no_of_items_to_be_written,filepointer)
-	// 3rd argument depends on how we are writing to the file - if it is in the form of an array, 3rd arg is length of array
-	fwrite(binary,4,1,fp);
+	fwrite(&address,sizeof(address),1,fp);
+	fwrite(&result,sizeof(result),1,fp);
 	if (ferror(fp)){
 		printf("Error in writing to file");
 		exit(EXIT_FAILURE);
 	}
 
 	fclose(fp);
+}
+
+
+void binary_writer_array(char **dest_file, int32_t *result_array, uint32_t address){
 }
 
 bool islabel(char *line){
@@ -57,16 +60,19 @@ void freeArray(char ** array){
 //typedef uint32_t (*func_pointer)(TokenizedInstruction);
 //func_pointer array_fn_pointers = {assemble_data_processing, assemble_multiply, assemble_single_data_transfer, assemble_branch};
 
-void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_table, uint32_t pc, uint32_t last_address){
+void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_table, uint32_t pc, uint32_t last_address, char **argv, int32_t *array_single_data){
 	//call the instruction based on the opcode
-	if (instruction -> opcode <= CMP){
-		assemble_data_processing(instruction);
+	if (*(instruction -> opcode) <= CMP){
+		uint32_t result = assemble_data_processing(instruction);
+		binarywriter(argv[2],result,pc);
 	}
-	else if (instruction -> opcode <= MLA){
-		assemble_multiply(instruction);
+	else if (*(instruction -> opcode) <= MLA){
+		uint32_t result = assemble_multiply(instruction);
+		binarywriter(argv[2],result,pc);
 	}
-	else if (instruction -> opcode <= STR){
-		assemble_single_data_transfer(instruction,pc,last_address);
+	else if (*(instruction -> opcode) <= STR){
+		uint32_t result = assemble_single_data_transfer(instruction,pc,last_address,array_single_data);
+		binarywriter(argv[2],result,pc);
 	}
 	else if (instruction -> opcode <= B){
 		// if 1st operand is a label , replace it with its reference	
@@ -76,14 +82,15 @@ void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_tabl
 			snprintf(buffer, sizeof(buffer),"%x",res);
 			instruction->operand[0] = buffer;
 		}
-		assemble_branch(instruction,pc);
+		uint32_t result = assemble_branch(instruction,pc);
+		binarywriter(argv[2],result,pc);
 	}
 	else {
 		printf("Incorrect opcode detected");
 	}
 }
 
-void load_assembly(char *filename){
+void load_assembly(char *filename,char **argv){
 	//create hash table structure for symbol table
 	hash_table *symbol_table = create_hash_table();
 
@@ -101,6 +108,10 @@ void load_assembly(char *filename){
 	char **data = allocArray(numlines,MAX_LINE_SIZE);
 	assert (data != NULL);
 
+	// Creating an array of integers to write the single data instructions at the end of the assembled file
+        int array_length = 100;
+        int32_t *array_single_data = malloc(100*sizeof(int32_t));
+	
 
 	//first pass over source code
 	char buffer[MAX_LINE_SIZE];
@@ -134,8 +145,7 @@ void load_assembly(char *filename){
 			// call the tokenizer with data[i]
 			TokenizedInstruction *instruct = tokenize(data[i]);
 			// pass the tokenized structure into the various functions
-			call_instruction(instruct,symbol_table,calling_address,address);
-			// TOKENIZED INSTRUCTION SHOULD REPLACE THE LABEL REFERENCES!!!!!!!!!!!!!
+			call_instruction(instruct,symbol_table,calling_address,address,argv,array_single_data);
 			calling_address++;
 			free_tokenized_instruction(instruct);
 		}
@@ -143,6 +153,9 @@ void load_assembly(char *filename){
 
 	freeArray(data);
 	free_hash_table(symbol_table);
+
+	//After we have proceesed all the instructions, writing the single data transfer instructions at the end of the assembled file
+	binary_writer_array(argv[2],array_single_data,address);
 }
 
 
