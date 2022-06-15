@@ -31,8 +31,6 @@ void binary_writer_array(char **dest_file, int32_t *result_array, uint32_t addre
 
 }
 
-hash_table *symbol_table = create_hash_table();
-
 bool islabel(char *line){
 	return line[strlen(line)-2] == ':';
 }
@@ -96,6 +94,10 @@ void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_tabl
 }
 
 void load_assembly(char *filename,char **argv){
+	//create hash table structure for symbol table
+	hash_table *symbol_table = create_hash_table();
+
+	//open the assembly file
 	FILE *fp = fopen(filename,"r");
 	assert(fp != NULL);
 	int numlines=0;
