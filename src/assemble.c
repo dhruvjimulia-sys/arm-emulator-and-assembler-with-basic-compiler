@@ -6,6 +6,7 @@
 #include "symbol_table.h"
 #include "tokenizer.h"
 #include "assemble_instructions.h"
+#include <errno.h>
 
 #define MAX_LINE_SIZE 512
 
@@ -110,6 +111,8 @@ void load_assembly(char *filename,char **argv){
 
 	//open the assembly file
 	FILE *fp = fopen(filename,"r");
+	//assert(fp != NULL);
+	printf("Error no: %d\n",errno);
 	assert(fp != NULL);
 	int numlines=0;
 	
@@ -183,6 +186,5 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 	load_assembly(argv[1],argv);
-	// begin the assembler loop
 	return EXIT_SUCCESS;
 }
