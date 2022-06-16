@@ -1,7 +1,7 @@
-#include "assembler_type_definitions.h"
-
 #ifndef TOKENIZER_H
 #define TOKENIZER_H
+
+#include "assembler_type_definitions.h"
 
 //tokenize an instruction into its label, opcode and operand fields
 TokenizedInstruction * tokenize( char * instruction );

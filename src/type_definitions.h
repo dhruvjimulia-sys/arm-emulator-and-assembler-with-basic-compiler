@@ -1,7 +1,7 @@
-#include <stdint.h>
-
 #ifndef TYPE_DEFINITIONS_H
 #define TYPE_DEFINITIONS_H
+
+#include <stdint.h>
 
 #define MEM_SIZE 65536
 #define REGISTERS 17

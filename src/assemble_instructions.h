@@ -1,8 +1,8 @@
+#ifndef __ASSEMBLE_INSTRUCTIONS_H__
+#define __ASSEMBLE_INSTRUCTIONS_H__
+
 #include <stdint.h>
 #include "assembler_type_definitions.h"
-
-#ifndef ASSEMBLE_INSTRUCTIONS_H
-#define ASSEMBLE_INSTRUCTIONS_H
 
 //assemble a data processing instruction
 uint32_t assemble_data_processing(TokenizedInstruction *token_instr);

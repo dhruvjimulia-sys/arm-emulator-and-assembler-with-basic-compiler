@@ -1,9 +1,9 @@
+#ifndef __SYMBOL_TABLE_H__
+#define __SYMBOL_TABLE_H__
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
-
-#ifndef SYMBOL_TABLE_H
-#define SYMBOL_TABLE_H
 
 typedef struct hash_table_entry {
 	char *symbol;
