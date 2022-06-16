@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
 	       	printf("Incorrect no. of arguments supplied!");
 		return EXIT_FAILURE;
 	}
-	//load_assembly(argv[1]);
+	load_assembly(argv[1],argv);
 	// begin the assembler loop
 	return EXIT_SUCCESS;
 }
