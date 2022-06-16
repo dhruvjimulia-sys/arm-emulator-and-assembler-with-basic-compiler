@@ -72,7 +72,7 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 			opcode = 0xd;
 			break;
 		default:
-			printf("Unexpected opcode %x", token_instr->opcode);
+			printf("Invalid opcode %x for data processing instruction.", token_instr->opcode);
 			exit(EXIT_FAILURE);
 	}
 
@@ -160,7 +160,7 @@ uint32_t assemble_multiply(TokenizedInstruction *token_instr) {
 uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32_t pc_address, uint32_t last_address, int32_t *eof_expressions, int *size_array) {
 	uint32_t assembled_instr = 0;
 	static int offset_from_last_address = 1;
-	char **address_tokens[2];
+	char *address_tokens[2];
 	int num_tokens = 1;	
 	
 	//trim off square brackets from address specification
@@ -263,6 +263,10 @@ uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address)
 			break;
 		case B:
 			cond_field = ALWAYS_COND;
+			break;
+		default:
+			printf("Invalid opcode %x for branch instruction", token_instr->opcode);
+            exit(EXIT_FAILURE);
 	}
 
 	//set cond field

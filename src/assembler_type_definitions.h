@@ -1,7 +1,7 @@
-#include <stdint.h>
+#ifndef __ASSEMBLER_TYPE_DEFINITIONS_H__
+#define __ASSEMBLER_TYPE_DEFINITIONS_H__
 
-#ifndef ASSEMBLER_TYPE_DEFINITIONS_H
-#define ASSEMBLER_TYPE_DEFINITIONS_H
+#include <stdint.h>
 
 typedef enum {
 	ADD,

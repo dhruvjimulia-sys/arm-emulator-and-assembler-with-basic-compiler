@@ -1,10 +1,10 @@
+#ifndef __EMULATOR_UTILS_H__
+#define __EMULATOR_UTILS_H__
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include "type_definitions.h"
-
-#ifndef EMULATOR_UTILS_H
-#define EMULATOR_UTILS_H
 
 #define SP_REGISTER 13
 #define LR_REGISTER 14

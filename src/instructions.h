@@ -1,3 +1,6 @@
+#ifndef __INSTRUCTIONS_H
+#define __INSTRUCTIONS_H
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
@@ -20,3 +23,5 @@ bool execute_branch_instruction(struct Processor* processor, uint32_t *instr);
 void execute_multiply_instruction(struct Processor* processor, uint32_t *instr);
 
 void execute_single_data_transfer(struct Processor* processor, uint32_t *instr);
+
+#endif

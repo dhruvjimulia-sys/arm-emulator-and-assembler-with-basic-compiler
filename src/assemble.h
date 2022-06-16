@@ -1,10 +1,10 @@
+#ifndef __ASSEMBLE_H__
+#define __ASSEMBLE_H__
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "symbol_table.h"
 #include "assembler_type_definitions.h"
-
-#ifndef ASSEMBLE_H
-#define ASSEMBLE_H
 
 //binary file writer
 void binary_writer(char* dest_file, uint32_t *binary, uint32_t cursor);

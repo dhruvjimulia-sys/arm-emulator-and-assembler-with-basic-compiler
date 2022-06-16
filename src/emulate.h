@@ -1,12 +1,12 @@
+#ifndef __EMULATE_H__
+#define __EMULATE_H__
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
 #include "instructions.h"
-
-#ifndef EMULATE_H
-#define EMULATE_H
 
 //loads instruction bytes
 void load(char filename[], struct Processor* processor);
