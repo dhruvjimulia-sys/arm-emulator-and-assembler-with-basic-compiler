@@ -11,7 +11,7 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr);
 uint32_t assemble_multiply(TokenizedInstruction *token_instr);
 
 //assemble a single data transfer instruction
-uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32_t pc_address, uint32_t last_address, int32_t *eof_expressions);
+uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32_t pc_address, uint32_t last_address, int32_t *eof_expressions, int *size_array);
 
 //assemble a branch instruction
 uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address);

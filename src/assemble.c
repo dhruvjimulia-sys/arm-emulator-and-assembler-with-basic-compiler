@@ -15,8 +15,8 @@ void binary_writer(char* dest_file, uint32_t result, uint32_t address){
 	assert(fp != NULL);
         
 	// fwrite(pointer_of_writing_data, size_of_each_element_in_bytes,no_of_items_to_be_written,filepointer)
-	fwrite(&address,sizeof(address),1,fp);
-	fwrite(&result,sizeof(result),1,fp);
+	//fwrite(&address,sizeof(address),1,fp);
+	fwrite(&result,4,1,fp);
 	if (ferror(fp)){
 		printf("Error in writing to file");
 		exit(EXIT_FAILURE);
@@ -26,7 +26,21 @@ void binary_writer(char* dest_file, uint32_t result, uint32_t address){
 }
 
 
-void binary_writer_array(char **dest_file, int32_t *result_array, uint32_t address){
+void binary_writer_array(char *dest_file, int32_t *result_array, int size,uint32_t address){
+	FILE *fp = fopen(dest_file,"ab");
+	assert(fp != NULL);
+
+	//uint32_t add = address;
+
+	for (int i=0; i < size; i++){
+		//fwrite(&add,sizeof(add),1,fp);
+		fwrite(&result_array[i],4,1,fp);
+		//add++;
+	}
+	if (ferror(fp)){
+		printf("Error in writing array elements to file");
+	}
+	fclose(fp);
 }
 
 bool islabel(char *line){
@@ -60,21 +74,21 @@ void freeArray(char ** array){
 //typedef uint32_t (*func_pointer)(TokenizedInstruction);
 //func_pointer array_fn_pointers = {assemble_data_processing, assemble_multiply, assemble_single_data_transfer, assemble_branch};
 
-void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_table, uint32_t pc, uint32_t last_address, char **argv, int32_t *array_single_data){
+void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_table, uint32_t pc, uint32_t last_address, char **argv, int32_t *array_single_data,int size_array){
 	//call the instruction based on the opcode
-	if (*(instruction -> opcode) <= CMP){
+	if ((instruction -> opcode) <= CMP){
 		uint32_t result = assemble_data_processing(instruction);
-		binarywriter(argv[2],result,pc);
+		binary_writer(argv[2],result,pc);
 	}
-	else if (*(instruction -> opcode) <= MLA){
+	else if ((instruction -> opcode) <= MLA){
 		uint32_t result = assemble_multiply(instruction);
-		binarywriter(argv[2],result,pc);
+		binary_writer(argv[2],result,pc);
 	}
-	else if (*(instruction -> opcode) <= STR){
-		uint32_t result = assemble_single_data_transfer(instruction,pc,last_address,array_single_data);
-		binarywriter(argv[2],result,pc);
+	else if ((instruction -> opcode) <= STR){
+		uint32_t result = assemble_single_data_transfer(instruction,pc,last_address,array_single_data,&size_array);
+		binary_writer(argv[2],result,pc);
 	}
-	else if (instruction -> opcode <= B){
+	else if ((instruction -> opcode) <= B){
 		// if 1st operand is a label , replace it with its reference	
 		uint32_t res = lookup(instruction->operand[0],symbol_table);
 		if (res!=-1){
@@ -83,7 +97,7 @@ void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_tabl
 			instruction->operand[0] = buffer;
 		}
 		uint32_t result = assemble_branch(instruction,pc);
-		binarywriter(argv[2],result,pc);
+		binary_writer(argv[2],result,pc);
 	}
 	else {
 		printf("Incorrect opcode detected");
@@ -110,7 +124,8 @@ void load_assembly(char *filename,char **argv){
 
 	// Creating an array of integers to write the single data instructions at the end of the assembled file
         int array_length = 100;
-        int32_t *array_single_data = malloc(100*sizeof(int32_t));
+        int32_t *array_single_data = malloc(array_length*sizeof(int32_t));
+	int size_array = 0;
 	
 
 	//first pass over source code
@@ -145,7 +160,7 @@ void load_assembly(char *filename,char **argv){
 			// call the tokenizer with data[i]
 			TokenizedInstruction *instruct = tokenize(data[i]);
 			// pass the tokenized structure into the various functions
-			call_instruction(instruct,symbol_table,calling_address,address,argv,array_single_data);
+			call_instruction(instruct,symbol_table,calling_address,address,argv,array_single_data,size_array);
 			calling_address++;
 			free_tokenized_instruction(instruct);
 		}
@@ -155,7 +170,7 @@ void load_assembly(char *filename,char **argv){
 	free_hash_table(symbol_table);
 
 	//After we have proceesed all the instructions, writing the single data transfer instructions at the end of the assembled file
-	binary_writer_array(argv[2],array_single_data,address);
+	binary_writer_array(argv[2],array_single_data,size_array,address);
 }
 
 

@@ -157,7 +157,7 @@ uint32_t assemble_multiply(TokenizedInstruction *token_instr) {
 	return assembled_instr;
 }
 
-uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32_t pc_address, uint32_t last_address, int32_t *eof_expressions) {
+uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32_t pc_address, uint32_t last_address, int32_t *eof_expressions, int *size_array) {
 	uint32_t assembled_instr = 0;
 	static int offset_from_last_address = 1;
 	char **address_tokens[2];
@@ -190,6 +190,7 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 			} else {
 				//add value of expression to end of file
 				eof_expressions[offset_from_last_address - 1] = expression;
+				*size_array = *size_array + 1;
 
 				//set P flag
 				set_bits_to(assembled_instr, SET_BIT, P_BIT);
