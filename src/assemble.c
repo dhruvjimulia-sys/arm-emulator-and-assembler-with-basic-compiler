@@ -171,6 +171,8 @@ void load_assembly(char *filename,char **argv){
 
 	//After we have proceesed all the instructions, writing the single data transfer instructions at the end of the assembled file
 	binary_writer_array(argv[2],array_single_data,size_array,address);
+
+	free(array_single_data);
 }
 
 
