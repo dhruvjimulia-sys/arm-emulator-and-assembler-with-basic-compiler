@@ -72,7 +72,7 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 			opcode = 0xd;
 			break;
 		default:
-			printf("Unexpected opcode %x", token_instr->opcode);
+			printf("Invalid opcode %x for data processing instruction.", token_instr->opcode);
 			exit(EXIT_FAILURE);
 	}
 
@@ -263,6 +263,10 @@ uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address)
 			break;
 		case B:
 			cond_field = ALWAYS_COND;
+			break;
+		default:
+			printf("Invalid opcode %x for branch instruction", token_instr->opcode);
+            exit(EXIT_FAILURE);
 	}
 
 	//set cond field
