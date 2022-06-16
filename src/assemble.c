@@ -12,7 +12,7 @@
 
 //printing binary instructions onto the destination file
 void binary_writer(char* dest_file, uint32_t result, uint32_t address){
-	FILE *fp = fopen(dest_file,"ab");
+	FILE *fp = fopen(dest_file,"w");
 	assert(fp != NULL);
         
 	// fwrite(pointer_of_writing_data, size_of_each_element_in_bytes,no_of_items_to_be_written,filepointer)
@@ -61,7 +61,7 @@ char **allocArray (unsigned int rows, unsigned int cols){
 		free(array);
 		return NULL;
 	}
-	for (i=0; i < rows; i++){
+	for (i=1; i < rows; i++){
 		array[i] = array[i-1] + cols;
 	}
 	return array;
