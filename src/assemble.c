@@ -11,12 +11,9 @@
 #define MAX_LINE_SIZE 512
 
 //printing binary instructions onto the destination file
-void binary_writer(char* dest_file, uint32_t result, uint32_t address){
-	FILE *fp = fopen(dest_file,"w");
+void binary_writer(char* dest_file, uint32_t result){
+	FILE *fp = fopen(dest_file,"a");
 	assert(fp != NULL);
-        
-	// fwrite(pointer_of_writing_data, size_of_each_element_in_bytes,no_of_items_to_be_written,filepointer)
-	//fwrite(&address,sizeof(address),1,fp);
 	fwrite(&result,4,1,fp);
 	if (ferror(fp)){
 		printf("Error in writing to file");
@@ -27,17 +24,14 @@ void binary_writer(char* dest_file, uint32_t result, uint32_t address){
 }
 
 
-void binary_writer_array(char *dest_file, int32_t *result_array, int size,uint32_t address){
-	FILE *fp = fopen(dest_file,"ab");
+void binary_writer_array(char *dest_file, int32_t *result_array, int size){
+	FILE *fp = fopen(dest_file,"a");
 	assert(fp != NULL);
-
-	//uint32_t add = address;
-
+	
 	for (int i=0; i < size; i++){
-		//fwrite(&add,sizeof(add),1,fp);
 		fwrite(&result_array[i],4,1,fp);
-		//add++;
 	}
+
 	if (ferror(fp)){
 		printf("Error in writing array elements to file");
 	}
@@ -75,46 +69,118 @@ void freeArray(char ** array){
 //typedef uint32_t (*func_pointer)(TokenizedInstruction);
 //func_pointer array_fn_pointers = {assemble_data_processing, assemble_multiply, assemble_single_data_transfer, assemble_branch};
 
-void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_table, uint32_t pc, uint32_t last_address, char **argv, int32_t *array_single_data,int size_array){
+void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_table, uint32_t pc, uint32_t last_address, char *dest_file, int32_t *array_single_data,int size_array){
+
 	//call the instruction based on the opcode
 	if ((instruction -> opcode) <= CMP){
 		uint32_t result = assemble_data_processing(instruction);
-		binary_writer(argv[2],result,pc);
+		binary_writer(dest_file,result);
 	}
 	else if ((instruction -> opcode) <= MLA){
 		uint32_t result = assemble_multiply(instruction);
-		binary_writer(argv[2],result,pc);
+		binary_writer(dest_file,result);
 	}
 	else if ((instruction -> opcode) <= STR){
 		uint32_t result = assemble_single_data_transfer(instruction,pc,last_address,array_single_data,&size_array);
-		binary_writer(argv[2],result,pc);
+		binary_writer(dest_file,result);
 	}
 	else if ((instruction -> opcode) <= B){
 		// if 1st operand is a label , replace it with its reference	
 		uint32_t res = lookup(instruction->operand[0],symbol_table);
 		if (res!=-1){
-			char buffer[32];
+			char buffer[50];
 			snprintf(buffer, sizeof(buffer),"%x",res);
 			instruction->operand[0] = buffer;
 		}
 		uint32_t result = assemble_branch(instruction,pc);
-		binary_writer(argv[2],result,pc);
+		binary_writer(dest_file,result);
 	}
 	else {
 		printf("Incorrect opcode detected");
 	}
 }
 
-void load_assembly(char *filename,char **argv){
+void load_assembly(char **argv){
 	//create hash table structure for symbol table
 	 hash_table *symbol_table = create_hash_table();
 
 	//open the assembly file
 	FILE *fp;
-	fp = fopen(filename,"r");
+	fp = fopen(argv[1],"r");
 	assert(fp != NULL);
-	printf("Error no: %d\n",errno);
-	assert(fp != NULL);
+
+	// FIRST PASS OVER SOURCE CODE
+
+	uint32_t address = 0x0;	
+	while(1){
+		char buffer[MAX_LINE_SIZE];
+		int res = fscanf(fp, " %[^\n]", buffer);
+		if (res == EOF){
+			break;
+		}
+		// adding a newline character to the buffer temporaily since the rest of the code relies on it
+		char *newstr = malloc(strlen(buffer)+2);
+		strcpy(newstr, buffer);
+		strcat(newstr,"\n");
+
+		//process the new string
+		if (islabel(newstr)){
+			address = 4*address;
+			//truncating the string before the :
+			newstr[strlen(newstr)-2] = '\0';
+			insert(newstr,address, symbol_table);
+		}
+		else {
+			address++;
+			// address = address + 0x4;
+		}
+		free(newstr);
+	}
+	fclose(fp);
+
+	// 2ND PASS OVER SOURCE CODE
+	FILE *fp2;
+        fp2 = fopen(argv[1],"r");
+        assert(fp2 != NULL);
+
+	uint32_t calling_address = 0x0;
+
+	//Creating an array of integers to write the single data expressions at the end of the assembled file
+	int array_length = 100;
+        int32_t *array_single_data = malloc(array_length*sizeof(int32_t));
+	int size_array = 0;
+
+	while(1){
+		char buffer[MAX_LINE_SIZE];
+                int res = fscanf(fp, " %[^\n]", buffer);
+                if (res == EOF){
+                        break;
+                }
+
+		// adding a newline character to the buffer temporaily since the rest of the code relies on it
+                char *newstr = malloc(strlen(buffer)+2);
+                strcpy(newstr, buffer);
+                strcat(newstr,"\n");
+
+		if (!islabel(newstr)){
+			//calling the tokenizer with the new string
+			TokenizedInstruction *instruct = tokenize(newstr);
+			//pass the tokenized instruction into the various functions
+			call_instruction(instruct,symbol_table,calling_address,address,argv[2],array_single_data,size_array);
+			calling_address++;
+			free_tokenized_instruction(instruct);
+		}
+		free(newstr);
+	}
+	free(fp2);
+
+	//After we have processed all the instructions, writing the single data transfer expressions at the end of the assembled file
+	binary_writer_array(argv[2],array_single_data,size_array);
+	free(array_single_data);
+	
+	
+
+	/*
 	int numlines=0;
 	
 	// counting the no. of new lines
@@ -132,6 +198,7 @@ void load_assembly(char *filename,char **argv){
 	int size_array = 0;
 	
 
+	
 	//first pass over source code
 	char buffer[MAX_LINE_SIZE];
 	char *read = fgets(buffer,MAX_LINE_SIZE,fp);
@@ -157,6 +224,8 @@ void load_assembly(char *filename,char **argv){
 	
 	fclose(fp);
 
+	
+
 	// 2nd pass, reading from the string array and passing it into the tokenizer
 	uint32_t calling_address = 0x0;
 	for (int i = 0; i < numlines; i++){
@@ -178,6 +247,8 @@ void load_assembly(char *filename,char **argv){
 	binary_writer_array(argv[2],array_single_data,size_array,address);
 
 	free(array_single_data);
+
+	*/
 }
 
 
@@ -187,6 +258,6 @@ int main(int argc, char **argv) {
 	       	printf("Incorrect no. of arguments supplied!");
 		return EXIT_FAILURE;
 	}
-	load_assembly(argv[1],argv);
+	load_assembly(argv);
 	return EXIT_SUCCESS;
 }
