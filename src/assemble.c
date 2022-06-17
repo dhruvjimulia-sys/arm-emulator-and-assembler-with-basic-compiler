@@ -60,7 +60,7 @@ char **allocArray (unsigned int rows, unsigned int cols){
 		free(array);
 		return NULL;
 	}
-	for (i=0; i < rows; i++){
+	for (i=1; i < rows; i++){
 		array[i] = array[i-1] + cols;
 	}
 	return array;
@@ -142,7 +142,7 @@ void load_assembly(char *filename,char **argv){
 			address = 4*address;
 			// truncates the string before : character
 			buffer[strlen(buffer)-2]='\0';
-			insert(buffer,address, symbol_table->entries, symbol_table->size, symbol_table);
+			insert(buffer,address, symbol_table);
 	
 		} else {
 			address++;
