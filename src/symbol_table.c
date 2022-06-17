@@ -98,7 +98,12 @@ bool resize(hash_table *symtab) {
 	symtab->size = new_size;
 
 	//allocate memory for new entry buckets
-	entry **rehash_entries = calloc(new_size, sizeof(entry));
+	entry **rehash_entries = malloc(new_size * sizeof(entry *));
+
+	for (int i = 0; i < new_size; i++) {
+                rehash_entries[i] = NULL;
+        }
+
 	if (rehash_entries == NULL) {
 		fprintf(stderr, "Memory allocation for rehashed entries failed");
 		return false;
@@ -131,7 +136,7 @@ void insert(char *s, uint32_t address, hash_table *symtab) {
 		//hash table slot empty, no entry yet
 		if (symtab->count == symtab->size) {
 			//hash table is full - resize hash table to fit symbols
-			resize(symtab);
+			//resize(symtab);
 			
 			//reassign buckets variable to point to new rehashed table buckets of resized table
 			buckets = symtab->entries;
@@ -202,11 +207,13 @@ void rehash(hash_table *symtab, entry **old_entries, size_t old_size){
 
 			prev = curr;
 			curr = curr->next;
+			free(prev->symbol);
 			free(prev);
 		}
 	}
 }
 
+/*
 int main(void) {
 	hash_table *symtab = create_hash_table();
 	
@@ -228,3 +235,4 @@ int main(void) {
 	free_hash_table(symtab);
 	fprintf(stdout, "success \n");
 }
+*/
