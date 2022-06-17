@@ -160,6 +160,7 @@ void load_assembly(char *filename,char **argv){
 	uint32_t calling_address = 0x0;
 	for (int i = 0; i < numlines; i++){
 		if (!islabel(data[i])){
+			printf("%s",data[i]);
 			// call the tokenizer with data[i]
 			TokenizedInstruction *instruct = tokenize(data[i]);
 			// pass the tokenized structure into the various functions
