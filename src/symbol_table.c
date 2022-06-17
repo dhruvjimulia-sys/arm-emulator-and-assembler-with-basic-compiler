@@ -90,9 +90,9 @@ bool resize(hash_table *symtab) {
 	size_t new_size = symtab->size * 2;
 	
 	//check for overflow (if new size is too big)
-    if (new_size < old_size) {
-        return false;
-    }
+	if (new_size < old_size) {
+        	return false;
+	}
 
 	//set new size in hash table
 	symtab->size = new_size;
@@ -106,7 +106,7 @@ bool resize(hash_table *symtab) {
 
 	//assign new entries to hash table
 	entry **old_entries = symtab->entries;
-    symtab->entries = rehash_entries;
+	symtab->entries = rehash_entries;
 	
 	//rehash symbols from the old symbol table
 	rehash(symtab, old_entries, old_size);
