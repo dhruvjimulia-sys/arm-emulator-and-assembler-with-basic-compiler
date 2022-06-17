@@ -107,11 +107,12 @@ void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_tabl
 
 void load_assembly(char *filename,char **argv){
 	//create hash table structure for symbol table
-	hash_table *symbol_table = create_hash_table();
+	 hash_table *symbol_table = create_hash_table();
 
 	//open the assembly file
-	FILE *fp = fopen(filename,"r");
-	//assert(fp != NULL);
+	FILE *fp;
+	fp = fopen(filename,"r");
+	assert(fp != NULL);
 	printf("Error no: %d\n",errno);
 	assert(fp != NULL);
 	int numlines=0;
