@@ -35,9 +35,9 @@ hash_table *create_hash_table(void) {
 	//allocate memory for symbol table
 	hash_table *new_table = malloc(sizeof(hash_table));
 	if(new_table == NULL) {
-        fprintf(stderr, "Memory allocation of hash table failed.");
-        exit(EXIT_FAILURE);
-    }
+		fprintf(stderr, "Memory allocation of hash table failed.");
+		exit(EXIT_FAILURE);
+	}
 
 	//initialize properties of symbol table
 	new_table->count = 0;
@@ -93,12 +93,16 @@ bool resize(hash_table *symtab) {
 	if (new_size < old_size) {
         	return false;
 	}
-
 	//set new size in hash table
 	symtab->size = new_size;
 
 	//allocate memory for new entry buckets
-	entry **rehash_entries = calloc(new_size, sizeof(entry));
+	entry **rehash_entries = malloc(new_size * sizeof(entry *));
+
+	for (int i = 0; i < new_size; i++) {
+                rehash_entries[i] = NULL;
+        }
+
 	if (rehash_entries == NULL) {
 		fprintf(stderr, "Memory allocation for rehashed entries failed");
 		return false;
@@ -131,7 +135,7 @@ void insert(char *s, uint32_t address, hash_table *symtab) {
 		//hash table slot empty, no entry yet
 		if (symtab->count == symtab->size) {
 			//hash table is full - resize hash table to fit symbols
-			resize(symtab);
+			//resize(symtab);
 			
 			//reassign buckets variable to point to new rehashed table buckets of resized table
 			buckets = symtab->entries;
@@ -202,7 +206,32 @@ void rehash(hash_table *symtab, entry **old_entries, size_t old_size){
 
 			prev = curr;
 			curr = curr->next;
+			free(prev->symbol);
 			free(prev);
 		}
 	}
 }
+
+/*
+int main(void) {
+	hash_table *symtab = create_hash_table();
+	
+	insert("label1", 0x0, symtab);
+	insert("label2", 0x2, symtab);
+
+	uint32_t address_one = lookup("label1", symtab);
+	fprintf(stdout, "%x \n", address_one);
+	uint32_t address_two = lookup("label2", symtab);
+	fprintf(stdout, "%x \n", address_two);
+
+	resize(symtab);
+	
+	uint32_t address_one_r = lookup("label1", symtab);
+        fprintf(stdout, "%x \n", address_one_r);
+        uint32_t address_two_r = lookup("label2", symtab);
+        fprintf(stdout, "%x \n", address_two_r);
+
+	free_hash_table(symtab);
+	fprintf(stdout, "success \n");
+}
+*/
