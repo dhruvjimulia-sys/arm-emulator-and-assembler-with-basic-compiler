@@ -35,9 +35,9 @@ hash_table *create_hash_table(void) {
 	//allocate memory for symbol table
 	hash_table *new_table = malloc(sizeof(hash_table));
 	if(new_table == NULL) {
-        fprintf(stderr, "Memory allocation of hash table failed.");
-        exit(EXIT_FAILURE);
-    }
+		fprintf(stderr, "Memory allocation of hash table failed.");
+		exit(EXIT_FAILURE);
+	}
 
 	//initialize properties of symbol table
 	new_table->count = 0;
@@ -90,9 +90,9 @@ bool resize(hash_table *symtab) {
 	size_t new_size = symtab->size * 2;
 	
 	//check for overflow (if new size is too big)
-    if (new_size < old_size) {
-        return false;
-    }
+    	if (new_size < old_size) {
+		return false;
+    	}
 
 	//set new size in hash table
 	symtab->size = new_size;
@@ -106,7 +106,7 @@ bool resize(hash_table *symtab) {
 
 	//assign new entries to hash table
 	entry **old_entries = symtab->entries;
-    symtab->entries = rehash_entries;
+	symtab->entries = rehash_entries;
 	
 	//rehash symbols from the old symbol table
 	rehash(symtab, old_entries, old_size);
@@ -205,4 +205,26 @@ void rehash(hash_table *symtab, entry **old_entries, size_t old_size){
 			free(prev);
 		}
 	}
+}
+
+int main(void) {
+	hash_table *symtab = create_hash_table();
+	
+	insert("label1", 0x0, symtab);
+	insert("label2", 0x2, symtab);
+
+	uint32_t address_one = lookup("label1", symtab);
+	fprintf(stdout, "%x \n", address_one);
+	uint32_t address_two = lookup("label2", symtab);
+	fprintf(stdout, "%x \n", address_two);
+
+	resize(symtab);
+	
+	uint32_t address_one_r = lookup("label1", symtab);
+        fprintf(stdout, "%x \n", address_one_r);
+        uint32_t address_two_r = lookup("label2", symtab);
+        fprintf(stdout, "%x \n", address_two_r);
+
+	free_hash_table(symtab);
+	fprintf(stdout, "success \n");
 }
