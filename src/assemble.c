@@ -145,7 +145,7 @@ void load_assembly(char *filename,char **argv){
 			address = 4*address;
 			// truncates the string before : character
 			buffer[strlen(buffer)-2]='\0';
-			insert(buffer,address, symbol_table->entries, symbol_table->size, symbol_table);
+			insert(buffer,address, symbol_table);
 	
 		} else {
 			address++;
