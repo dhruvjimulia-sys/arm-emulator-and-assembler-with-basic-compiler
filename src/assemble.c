@@ -39,7 +39,7 @@ void binary_writer_array(char *dest_file, int32_t *result_array, int size){
 }
 
 bool islabel(char *line){
-	return line[strlen(line)-2] == ':';
+	return line[strlen(line)-1] == ':';
 }
 
 char **allocArray (unsigned int rows, unsigned int cols){
@@ -118,23 +118,18 @@ void load_assembly(char **argv){
 		if (res == EOF){
 			break;
 		}
-		// adding a newline character to the buffer temporaily since the rest of the code relies on it
-		char *newstr = malloc(strlen(buffer)+2);
-		strcpy(newstr, buffer);
-		strcat(newstr,"\n");
 
-		//process the new string
-		if (islabel(newstr)){
+		//process the buffer
+		if (islabel(buffer)){
 			address = 4*address;
 			//truncating the string before the :
-			newstr[strlen(newstr)-2] = '\0';
-			insert(newstr,address, symbol_table);
+			buffer[strlen(buffer)-1] = '\0';
+			insert(buffer,address, symbol_table);
 		}
 		else {
 			address++;
 			// address = address + 0x4;
 		}
-		free(newstr);
 	}
 	fclose(fp);
 
@@ -157,20 +152,14 @@ void load_assembly(char **argv){
                         break;
                 }
 
-		// adding a newline character to the buffer temporaily since the rest of the code relies on it
-                char *newstr = malloc(strlen(buffer)+2);
-                strcpy(newstr, buffer);
-                strcat(newstr,"\n");
-
-		if (!islabel(newstr)){
+		if (!islabel(buffer)){
 			//calling the tokenizer with the new string
-			TokenizedInstruction *instruct = tokenize(newstr);
+			TokenizedInstruction *instruct = tokenize(buffer);
 			//pass the tokenized instruction into the various functions
 			call_instruction(instruct,symbol_table,calling_address,address,argv[2],array_single_data,size_array);
 			calling_address++;
 			free_tokenized_instruction(instruct);
 		}
-		free(newstr);
 	}
 	free(fp2);
 
