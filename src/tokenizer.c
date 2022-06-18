@@ -10,7 +10,7 @@ TokenizedInstruction* tokenize(char *instruction) {
 	TokenizedInstruction *tokenized = malloc(sizeof(TokenizedInstruction));
 	tokenized->operand = malloc(MAX_NUMBER_OPERANDS * sizeof(char *));
 	char* token = strtok(instruction, " ");
-	assert(token);
+	//assert(token != NULL);
 	tokenized->opcode = to_operation_enum(token);
 	uint32_t i = 0;
 	do {
@@ -18,7 +18,7 @@ TokenizedInstruction* tokenize(char *instruction) {
 		tokenized->operand[i] = token;
 		i++;
 	} while (token != NULL);
-	tokenized->num_operands = i;
+	tokenized->num_operands = i-1;
 	return tokenized;
 }
 
