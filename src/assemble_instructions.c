@@ -97,7 +97,7 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 		set_bits_to(&assembled_instr, SET_BIT, S_BIT);
 	} else {
 		//set rd bits
-		uint32_t rd = strtoul(++(token_instr->operand[0]), NULL, 0);
+		uint32_t rd = strtoul(token_instr->operand[0] + 1, NULL, 0);
 		set_bits_to(&assembled_instr, rd, RD_START_BIT);
 		/*
 		//removing the 'r' from the register operand
@@ -122,14 +122,14 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 	
 	if (!(opcode == 0xd)) {
 		//set rn bits
-		uint32_t rn = strtol(++(token_instr->operand[i - 1]), NULL, 0);
+		uint32_t rn = strtol(token_instr->operand[i - 1] + 1, NULL, 0);
 		set_bits_to(&assembled_instr, rn, RN_START_BIT);
 	}
 
 	if ((token_instr->operand[i])[0] == '#') {
 		//set operand2 field to expression
 		if (token_instr->opcode == LSL) { //[PC, #expression]
-			uint32_t expression = strtoul(++(token_instr->operand[i]), NULL, 0);
+			uint32_t expression = strtoul(token_instr->operand[i] + 1, NULL, 0);
 			set_bits_to(&assembled_instr, expression, LSL_INTEGER_START_BIT);
 		} else {
 			//not lsl, set operand2 to value of expression
@@ -158,6 +158,7 @@ uint32_t assemble_multiply(TokenizedInstruction *token_instr) {
 	uint32_t rm = strtol(++(token_instr->operand[1]), NULL, 0);
 	set_bits_to(&assembled_instr, rm, 0);
 
+  
 	//set rs register
 	uint32_t rs = strtol(++(token_instr->operand[2]), NULL, 0);
 	set_bits_to(&assembled_instr, rs, 8);
