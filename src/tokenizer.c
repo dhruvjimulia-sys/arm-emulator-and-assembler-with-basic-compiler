@@ -2,27 +2,36 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 #include "tokenizer.h"
 
 #define MAX_NUMBER_OPERANDS 4
+#define OPERAND_LENGTH 20
 
 TokenizedInstruction* tokenize(char *instruction) {
 	TokenizedInstruction *tokenized = malloc(sizeof(TokenizedInstruction));
 	tokenized->operand = malloc(MAX_NUMBER_OPERANDS * sizeof(char *));
-	char* token = strtok(instruction, " ");
-	//assert(token != NULL);
+	char token[OPERAND_LENGTH];
+  strcpy(token, strtok(instruction, " "));
 	tokenized->opcode = to_operation_enum(token);
 	uint32_t i = 0;
 	do {
-		token = strtok(NULL, ",");
-		tokenized->operand[i] = token;
+    char *token = strtok(NULL, ",");
+    if (token == NULL) {
+      break;
+    }
+    tokenized->operand[i] = malloc(OPERAND_LENGTH);
+    strcpy(tokenized->operand[i], token);
 		i++;
-	} while (token != NULL);
-	tokenized->num_operands = i-1;
-	return tokenized;
+	} while (tokenized->operand[i - 1] != NULL);
+	tokenized->num_operands = i;	
+  return tokenized;
 }
 
 void free_tokenized_instruction(TokenizedInstruction *tokenized) {
+  for (uint8_t i = 0; i < tokenized->num_operands; i++) {
+    free(tokenized->operand[i]);
+  }
 	free(tokenized->operand);
 	free(tokenized);
 }
