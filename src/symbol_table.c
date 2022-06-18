@@ -135,7 +135,7 @@ void insert(char *s, uint32_t address, hash_table *symtab) {
 		//hash table slot empty, no entry yet
 		if (symtab->count == symtab->size) {
 			//hash table is full - resize hash table to fit symbols
-			//resize(symtab);
+			resize(symtab);
 			
 			//reassign buckets variable to point to new rehashed table buckets of resized table
 			buckets = symtab->entries;

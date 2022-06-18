@@ -27,6 +27,19 @@
 #define SHIFT_TO_IMM 8
 #define LSL_INTEGER_START_BIT 7
 #define PIPELINE_EFFECT 8
+#define TRANSFER_ONLY 0x1
+#define TRANSFER_ONLY_START_BIT 26
+
+uint32_t rotate_right(uint32_t n, unsigned int shift_amount) {
+	if ((shift_amount &= sizeof(n) * 8 - 1) == 0){
+		return n;
+	}
+	return (n << shift_amount) | (n >> (sizeof(n) * 8 - shift_amount));
+}
+
+void set_bits_to(uint32_t *instr, uint32_t input, unsigned int starting_at) {
+	*instr |= (input << starting_at);
+}
 
 uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 	uint32_t assembled_instr = 0;
@@ -76,22 +89,21 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 			exit(EXIT_FAILURE);
 	}
 
-	set_bits_to(assembled_instr, opcode, OPCODE_START_BIT);
+	set_bits_to(&assembled_instr, opcode, OPCODE_START_BIT);
 
 	//instructions that do not compute result, but set the CPSR flags
 	if (opcode >= 0x8 && opcode <= 0xa) {
-		assert(token_instr->num_operands == TEST_INSTR_OPERAND_COUNT);
-
-		set_bits_to(assembled_instr, SET_BIT, S_BIT);
+		//assert(token_instr->num_operands == TEST_INSTR_OPERAND_COUNT);
+		set_bits_to(&assembled_instr, SET_BIT, S_BIT);
 	} else {
 		//set rd bits
-		uint32_t rd = strtol(++(token_instr->operand[0]), NULL, 0);
-		set_bits_to(assembled_instr, rd, RD_START_BIT);
+		uint32_t rd = strtoul(++(token_instr->operand[0]), NULL, 0);
+		set_bits_to(&assembled_instr, rd, RD_START_BIT);
 	}
 
 	//instructions that compute results
 	if (token_instr->opcode <= ORR) {
-		assert(token_instr->num_operands == COMPUTATION_INSTR_OPERAND_COUNT);
+		//assert(token_instr->num_operands == COMPUTATION_INSTR_OPERAND_COUNT);
 		
 		//set i to the correct position of operand2 in the operands array
 		i = 2;
@@ -100,26 +112,26 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 	if (!(opcode == 0xd)) {
 		//set rn bits
 		uint32_t rn = strtol(++(token_instr->operand[i - 1]), NULL, 0);
-		set_bits_to(assembled_instr, rn, RN_START_BIT);
+		set_bits_to(&assembled_instr, rn, RN_START_BIT);
 	}
 
 	if ((token_instr->operand[i])[0] == '#') {
 		//set operand2 field to expression
 		if (token_instr->opcode == LSL) { //[PC, #expression]
 			uint32_t expression = strtoul(++(token_instr->operand[i]), NULL, 0);
-			set_bits_to(assembled_instr, expression, LSL_INTEGER_START_BIT);
+			set_bits_to(&assembled_instr, expression, LSL_INTEGER_START_BIT);
 		} else {
 			//not lsl, set operand2 to value of expression
 			uint32_t expression = parse_expression(token_instr->operand[i]);
-			set_bits_to(assembled_instr, expression, OP2_OR_OFFSET);
+			set_bits_to(&assembled_instr, expression, OP2_OR_OFFSET);
 		}
 
 		//set I bit (as the value is immediate)
-		set_bits_to(assembled_instr, SET_BIT, I_BIT);
+		set_bits_to(&assembled_instr, SET_BIT, I_BIT);
 	}
 
 	//set condition field to ALWAYS
-	set_bits_to(assembled_instr, ALWAYS_COND, COND_FIELD_START_BIT);
+	set_bits_to(&assembled_instr, ALWAYS_COND, COND_FIELD_START_BIT);
 
 	return assembled_instr;
 }
@@ -129,30 +141,30 @@ uint32_t assemble_multiply(TokenizedInstruction *token_instr) {
 
 	//set rd register
 	uint32_t rd = strtol(++(token_instr->operand[0]), NULL, 0);
-	set_bits_to(assembled_instr, rd, RN_START_BIT);
+	set_bits_to(&assembled_instr, rd, RN_START_BIT);
 	
 	//set rm register
 	uint32_t rm = strtol(++(token_instr->operand[1]), NULL, 0);
-	set_bits_to(assembled_instr, rm, 0);
+	set_bits_to(&assembled_instr, rm, 0);
 
 	//set rs register
 	uint32_t rs = strtol(++(token_instr->operand[2]), NULL, 0);
-	set_bits_to(assembled_instr, rs, 8);
+	set_bits_to(&assembled_instr, rs, 8);
 
 	//set bits specific to multiply instruction
-	set_bits_to(assembled_instr, MULT_ONLY, MULT_ONLY_START_BIT);
+	set_bits_to(&assembled_instr, MULT_ONLY, MULT_ONLY_START_BIT);
 
 	if (token_instr->num_operands == 4) {
 		//set rn register field (if mla)
 		uint32_t rn = strtol(++(token_instr->operand[3]), NULL, 0);
-		set_bits_to(assembled_instr, rn, RD_START_BIT);
+		set_bits_to(&assembled_instr, rn, RD_START_BIT);
 
 		//set A bit (multiply with accumulate)
-		set_bits_to(assembled_instr, SET_BIT, A_BIT);
+		set_bits_to(&assembled_instr, SET_BIT, A_BIT);
 	}
 
 	//set condition field to ALWAYS
-	set_bits_to(assembled_instr, ALWAYS_COND, COND_FIELD_START_BIT);
+	set_bits_to(&assembled_instr, ALWAYS_COND, COND_FIELD_START_BIT);
 
 	return assembled_instr;
 }
@@ -179,7 +191,7 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 	if (token_instr->opcode == LDR) { //ldr instruction
 
 		//set L flag
-		set_bits_to(assembled_instr, SET_BIT, A_BIT);
+		set_bits_to(&assembled_instr, SET_BIT, A_BIT);
 
 		if ((token_instr->operand[1])[0] == '=') { //address spec of form <=expression>
 			int32_t expression = strtol(++(token_instr->operand[1]), NULL, 0);
@@ -193,16 +205,16 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 				*size_array = *size_array + 1;
 
 				//set P flag
-				set_bits_to(assembled_instr, SET_BIT, P_BIT);
+				set_bits_to(&assembled_instr, SET_BIT, P_BIT);
 
 				//calculate offset
 				uint32_t offset = (last_address + offset_from_last_address) - (pc_address - PIPELINE_EFFECT);
 				
 				//set rn (base register) to PC
-				set_bits_to(assembled_instr, PC_REGISTER, RN_START_BIT);
+				set_bits_to(&assembled_instr, PC_REGISTER, RN_START_BIT);
 
 				//set offset
-				set_bits_to(assembled_instr, offset, OP2_OR_OFFSET);
+				set_bits_to(&assembled_instr, offset, OP2_OR_OFFSET);
 				
 				return assembled_instr;
 			}
@@ -211,27 +223,30 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 
 	//set rn bits
 	uint32_t rn = strtol(++(address_tokens[0]), NULL, 0);
-	set_bits_to(assembled_instr, rn, RN_START_BIT);
+	set_bits_to(&assembled_instr, rn, RN_START_BIT);
 	
 	//set offset
 	uint32_t expression_val = 0;
 
 	if (num_tokens == 2) { //pre-indexing
 		expression_val = parse_expression(address_tokens[1]);
-		set_bits_to(assembled_instr, expression_val, OP2_OR_OFFSET);
+		set_bits_to(&assembled_instr, expression_val, OP2_OR_OFFSET);
 
 		//set P flag
-		set_bits_to(assembled_instr, SET_BIT, P_BIT);
+		set_bits_to(&assembled_instr, SET_BIT, P_BIT);
 	
 	} else { //post-indexing
 		expression_val = parse_expression(token_instr->operand[2]);
-		set_bits_to(assembled_instr, expression_val, OP2_OR_OFFSET);
+		set_bits_to(&assembled_instr, expression_val, OP2_OR_OFFSET);
 
 	}
 	
 	//set rd bits
 	uint32_t rd = strtol(++(token_instr->operand[0]), NULL, 0);
-	set_bits_to(assembled_instr, rd, RD_START_BIT);	
+	set_bits_to(&assembled_instr, rd, RD_START_BIT);	
+	
+	//set bits specific to single data transfer
+	set_bits_to(&assembled_instr, TRANSFER_ONLY, TRANSFER_ONLY_START_BIT);
 
 	return assembled_instr;
 }
@@ -270,19 +285,19 @@ uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address)
 	}
 
 	//set cond field
-	set_bits_to(assembled_instr, cond_field, COND_FIELD_START_BIT);
+	set_bits_to(&assembled_instr, cond_field, COND_FIELD_START_BIT);
 	
 	//calculate offset (-8 for the effects of ARM pipeline)
 	offset = (jump_address - (pc_address - PIPELINE_EFFECT)) >> 2;
 	
 	//set offset field with signed 24 bit offset (after being shifted right 2 bits)
-	set_bits_to(assembled_instr, offset, OP2_OR_OFFSET);
+	set_bits_to(&assembled_instr, offset, OP2_OR_OFFSET);
 
 	//set condition field in assembled instruction
-	set_bits_to(assembled_instr, cond_field, COND_FIELD_START_BIT);
+	set_bits_to(&assembled_instr, cond_field, COND_FIELD_START_BIT);
 	
 	//set bits specific to BRANCH instruction
-	set_bits_to(assembled_instr, BRANCH_ONLY, BRANCH_ONLY_START_BIT);
+	set_bits_to(&assembled_instr, BRANCH_ONLY, BRANCH_ONLY_START_BIT);
 
 	return assembled_instr;
 }
@@ -300,26 +315,16 @@ uint32_t parse_expression(char *operand_as_str) {
 		//calculate shift to immediate amount (rotate value)
 		while (num_constant > 0xff) {
 			shift_imm++;
-			rotate_right(num_constant, 2);
+			num_constant = rotate_right(num_constant, 2);
 		}
 		
 		//set operand immediate value with shift to immediate value
-		set_bits_to(expression, num_constant, OP2_OR_OFFSET);
-		set_bits_to(expression, shift_imm, SHIFT_TO_IMM); 
+		set_bits_to(&expression, num_constant, OP2_OR_OFFSET);
+		set_bits_to(&expression, shift_imm, SHIFT_TO_IMM); 
 	} else {
 		//set operand equal to expression
-		set_bits_to(expression, num_constant, OP2_OR_OFFSET);
+		set_bits_to(&expression, num_constant, OP2_OR_OFFSET);
 	}
 
 	return expression;
-}
-
-uint32_t rotate_right(uint32_t n, unsigned int shift_amount) {
-  if ((shift_amount &= sizeof(n) * 8 - 1) == 0)
-	return n;
-  return (n << shift_amount) | (n >> (sizeof(n) * 8 - shift_amount));
-}
-
-void set_bits_to(uint32_t instr, uint32_t input, unsigned int starting_at) {
-		instr |= (input << starting_at);
 }
