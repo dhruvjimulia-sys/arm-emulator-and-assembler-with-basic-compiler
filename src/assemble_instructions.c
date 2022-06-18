@@ -97,8 +97,9 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 		set_bits_to(&assembled_instr, SET_BIT, S_BIT);
 	} else {
 		//set rd bits
-		uint32_t rd = strtoul(token_instr->operand[0] + 1, NULL, 0);
+		uint32_t rd = strtoul((token_instr->operand[0] + 1), NULL, 0);
 		set_bits_to(&assembled_instr, rd, RD_START_BIT);
+
 		/*
 		//removing the 'r' from the register operand
 		token_instr -> operand[0] = token_instr ->operand[0] + 1;
@@ -114,7 +115,7 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 
 	//instructions that compute results
 	if (token_instr->opcode <= ORR) {
-		//assert(token_instr->num_operands == COMPUTATION_INSTR_OPERAND_COUNT);
+		assert(token_instr->num_operands == COMPUTATION_INSTR_OPERAND_COUNT);
 		
 		//set i to the correct position of operand2 in the operands array
 		i = 2;

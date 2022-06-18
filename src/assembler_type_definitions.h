@@ -10,6 +10,7 @@ typedef enum {
 	ANDEQ,
 	AND,
 	EOR,
+	PRINT,
 	ORR,
 	LSL,
 	MOV,

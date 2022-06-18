@@ -12,26 +12,27 @@ TokenizedInstruction* tokenize(char *instruction) {
 	TokenizedInstruction *tokenized = malloc(sizeof(TokenizedInstruction));
 	tokenized->operand = malloc(MAX_NUMBER_OPERANDS * sizeof(char *));
 	char token[OPERAND_LENGTH];
-  strcpy(token, strtok(instruction, " "));
+	strcpy(token, strtok(instruction, " "));
 	tokenized->opcode = to_operation_enum(token);
 	uint32_t i = 0;
 	do {
-    char *token = strtok(NULL, ",");
-    if (token == NULL) {
-      break;
-    }
-    tokenized->operand[i] = malloc(OPERAND_LENGTH);
-    strcpy(tokenized->operand[i], token);
+		char *token = strtok(NULL, ",");
+		if (token == NULL) {
+			break;
+    		}
+		tokenized->operand[i] = malloc(OPERAND_LENGTH);
+		strcpy(tokenized->operand[i], token);
 		i++;
 	} while (tokenized->operand[i - 1] != NULL);
+	
 	tokenized->num_operands = i;	
-  return tokenized;
+  	return tokenized;
 }
 
 void free_tokenized_instruction(TokenizedInstruction *tokenized) {
-  for (uint8_t i = 0; i < tokenized->num_operands; i++) {
-    free(tokenized->operand[i]);
-  }
+	for (uint8_t i = 0; i < tokenized->num_operands; i++) {
+		free(tokenized->operand[i]);
+	}
 	free(tokenized->operand);
 	free(tokenized);
 }
