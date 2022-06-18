@@ -85,8 +85,16 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 		set_bits_to(assembled_instr, SET_BIT, S_BIT);
 	} else {
 		//set rd bits
-		uint32_t rd = strtol(++(token_instr->operand[0]), NULL, 0);
+		//uint32_t rd = strtol(++(token_instr->operand[0]), NULL, 0);
+		//removing the 'r' from the register operand
+		token_instr -> operand[0] = token_instr ->operand[0] + 1;
+
+		char *num_str = malloc(3);
+		strcpy(num_str,token_instr->operand[0]);
+		int rd = atoi(num_str);
+		printf("%d",rd);
 		set_bits_to(assembled_instr, rd, RD_START_BIT);
+		free(num_str);
 	}
 
 	//instructions that compute results
