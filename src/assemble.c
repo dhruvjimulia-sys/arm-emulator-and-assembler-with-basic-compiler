@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
+#include "assembler_type_definitions.h"
 #include "symbol_table.h"
 #include "tokenizer.h"
 #include "assemble_instructions.h"
@@ -70,11 +71,10 @@ void freeArray(char ** array){
 //func_pointer array_fn_pointers = {assemble_data_processing, assemble_multiply, assemble_single_data_transfer, assemble_branch};
 
 void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_table, uint32_t pc, uint32_t last_address, char *dest_file, int32_t *array_single_data,int size_array){
-
 	//call the instruction based on the opcode
 	if ((instruction -> opcode) <= CMP){
 		uint32_t result = assemble_data_processing(instruction);
-		binary_writer(dest_file,result);
+    binary_writer(dest_file,result);
 	}
 	else if ((instruction -> opcode) <= MLA){
 		uint32_t result = assemble_multiply(instruction);
