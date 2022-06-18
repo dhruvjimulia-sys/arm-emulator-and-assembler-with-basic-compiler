@@ -70,18 +70,18 @@ void freeArray(char ** array){
 //typedef uint32_t (*func_pointer)(TokenizedInstruction);
 //func_pointer array_fn_pointers = {assemble_data_processing, assemble_multiply, assemble_single_data_transfer, assemble_branch};
 
-void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_table, uint32_t pc, uint32_t last_address, char *dest_file, int32_t *array_single_data,int size_array){
+void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_table, uint32_t pc, uint32_t last_address, char *dest_file, int32_t *array_single_data,int *size_array){
 	//call the instruction based on the opcode
 	if ((instruction -> opcode) <= CMP){
 		uint32_t result = assemble_data_processing(instruction);
-    binary_writer(dest_file,result);
+		binary_writer(dest_file,result);
 	}
 	else if ((instruction -> opcode) <= MLA){
 		uint32_t result = assemble_multiply(instruction);
 		binary_writer(dest_file,result);
 	}
 	else if ((instruction -> opcode) <= STR){
-		uint32_t result = assemble_single_data_transfer(instruction,pc,last_address,array_single_data,&size_array);
+		uint32_t result = assemble_single_data_transfer(instruction,pc,last_address,array_single_data,size_array);
 		binary_writer(dest_file,result);
 	}
 	else if ((instruction -> opcode) <= B){
@@ -156,7 +156,7 @@ void load_assembly(char **argv){
 			//calling the tokenizer with the new string
 			TokenizedInstruction *instruct = tokenize(buffer);
 			//pass the tokenized instruction into the various functions
-			call_instruction(instruct,symbol_table,calling_address,address,argv[2],array_single_data,size_array);
+			call_instruction(instruct,symbol_table,calling_address,address,argv[2],array_single_data,&size_array);
 			calling_address++;
 			free_tokenized_instruction(instruct);
 		}
@@ -164,7 +164,10 @@ void load_assembly(char **argv){
 	free(fp2);
 
 	//After we have processed all the instructions, writing the single data transfer expressions at the end of the assembled file
-	binary_writer_array(argv[2],array_single_data,size_array);
+	if (size_array != 0){
+		binary_writer_array(argv[2],array_single_data,size_array); 
+	}
+
 	free(array_single_data);
 
 	exit(EXIT_SUCCESS);
