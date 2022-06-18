@@ -166,6 +166,8 @@ void load_assembly(char **argv){
 	//After we have processed all the instructions, writing the single data transfer expressions at the end of the assembled file
 	binary_writer_array(argv[2],array_single_data,size_array);
 	free(array_single_data);
+
+	exit(EXIT_SUCCESS);
 	
 	
 
@@ -248,5 +250,5 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 	load_assembly(argv);
-	return EXIT_SUCCESS;
+	return 0;
 }
