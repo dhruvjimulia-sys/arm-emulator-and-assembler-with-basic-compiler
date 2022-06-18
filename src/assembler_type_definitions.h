@@ -30,9 +30,9 @@ typedef enum {
 } Operation;
 
 typedef struct {
-        Operation opcode;
-        char **operand;
-        uint32_t num_operands;
+	Operation opcode;
+	char **operand;
+	uint32_t num_operands;
 } TokenizedInstruction;
 
 #endif
