@@ -10,27 +10,6 @@
 #define TABLE_SIZE 41
 #define PRIME 7
 
-void free_hash_table(hash_table *symtab) {
-	entry *prev;
-	entry *curr;
-
-	for (unsigned int i = 0; i < symtab->size; i++) {
-		curr = symtab->entries[i];
-		
-		//deallocate memory of each entry in the bucket
-		while (curr != NULL) {
-			prev = curr;
-			curr = curr->next;
-			free(prev->symbol);
-			free(prev);
-		}
-
-	}
-	//deallocate rest of hash table
-	free(symtab->entries);
-	free(symtab);
-}
-
 hash_table *create_hash_table(void) {
 	//allocate memory for symbol table
 	hash_table *new_table = malloc(sizeof(hash_table));
@@ -135,7 +114,7 @@ void insert(char *s, uint32_t address, hash_table *symtab) {
 		//hash table slot empty, no entry yet
 		if (symtab->count == symtab->size) {
 			//hash table is full - resize hash table to fit symbols
-			resize(symtab);
+			//resize(symtab);
 			
 			//reassign buckets variable to point to new rehashed table buckets of resized table
 			buckets = symtab->entries;
@@ -188,6 +167,27 @@ uint32_t lookup(char *s, hash_table *symtab) {
 
 	//no match found
 	return -1;
+}
+
+void free_hash_table(hash_table *symtab) {
+        entry *prev;
+        entry *curr;
+
+        for (unsigned int i = 0; i < symtab->size; i++) {
+                curr = symtab->entries[i];
+
+                //deallocate memory of each entry in the bucket
+                while (curr != NULL) {
+                        prev = curr;
+                        curr = curr->next;
+                        free(prev->symbol);
+                        free(prev);
+                }
+
+        }
+        //deallocate rest of hash table
+        free(symtab->entries);
+        free(symtab);
 }
 
 
