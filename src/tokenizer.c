@@ -6,7 +6,7 @@
 #include "tokenizer.h"
 
 #define MAX_NUMBER_OPERANDS 4
-#define OPERAND_LENGTH 20
+#define OPERAND_LENGTH 32
 
 TokenizedInstruction* tokenize(char *instruction) {
 	TokenizedInstruction *tokenized = malloc(sizeof(TokenizedInstruction));

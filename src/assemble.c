@@ -129,10 +129,9 @@ void load_assembly(char **argv){
 
 		//process the buffer
 		if (islabel(buffer)){
-			address = 4*address;
 			//truncating the string before the :
 			buffer[strlen(buffer)-1] = '\0';
-			insert(buffer,address, symbol_table);
+			insert(buffer,4*address, symbol_table);
 		}
 		else {
 			address++;
