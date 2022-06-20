@@ -31,7 +31,8 @@
 #define PIPELINE_EFFECT 8
 #define TRANSFER_INSTR 0x2
 #define INSTR_FIELD 25
-#define PRINT_INSTR
+#define PRINT_INSTR 0x6
+#define INPUT_INSTR 0x7
 #define MAX_REPRESENTABLE 0xff
 #define MAX_ROTATION 16
 
@@ -321,8 +322,8 @@ uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address)
 	//set cond field
 	set_bits_to(&assembled_instr, cond_field, COND_FIELD_START_BIT);
 	
-	//calculate offset (-8 for the effects of ARM pipeline)
-	offset = (jump_address - (pc_address - PIPELINE_EFFECT)) >> 2;
+	//calculate offset (taking effects of ARM pipeline into account)
+	offset = (jump_address/4 - (pc_address - PIPELINE_EFFECT/4)) >> 2;
 	
 	//set offset field with signed 24 bit offset (after being shifted right 2 bits)
 	set_bits_to(&assembled_instr, offset, OP2_OFFSET_REG);
@@ -349,7 +350,7 @@ uint32_t assemble_special(TokenizedInstruction *token_instr) {
 		//set extra bit for input format??
 	}
 
-	uint32_t mem_address = strtol(token_instr->operand[0]+1);
+	uint32_t mem_address = strtoul(token_instr->operand[0]+1, NULL, 0);
 	set_bits_to(&assembled_instr, mem_address, OP2_OFFSET_REG);
 
 	return assembled_instr;
