@@ -322,8 +322,8 @@ uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address)
 	//set cond field
 	set_bits_to(&assembled_instr, cond_field, COND_FIELD_START_BIT);
 	
-	//calculate offset (-8 for the effects of ARM pipeline)
-	offset = (jump_address - (pc_address - PIPELINE_EFFECT/4)) >> 2;
+	//calculate offset (taking effects of ARM pipeline into account)
+	offset = (jump_address/4 - (pc_address - PIPELINE_EFFECT/4)) >> 2;
 	
 	//set offset field with signed 24 bit offset (after being shifted right 2 bits)
 	set_bits_to(&assembled_instr, offset, OP2_OFFSET_REG);

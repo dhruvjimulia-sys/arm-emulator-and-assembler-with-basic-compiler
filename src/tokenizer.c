@@ -3,10 +3,13 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
+#include "assembler_type_definitions.h"
 #include "tokenizer.h"
 
 #define MAX_NUMBER_OPERANDS 4
-#define OPERAND_LENGTH 32
+#define OPERAND_LENGTH 50
+#define MAX_VALS_IN_BRACKETS 10
+#define VAL_LENGTH 10
 
 TokenizedInstruction* tokenize(char *instruction) {
 	TokenizedInstruction *tokenized = malloc(sizeof(TokenizedInstruction));
@@ -15,18 +18,42 @@ TokenizedInstruction* tokenize(char *instruction) {
 	strcpy(token, strtok(instruction, " "));
 	tokenized->opcode = to_operation_enum(token);
 	uint32_t i = 0;
+  char *stack[MAX_VALS_IN_BRACKETS];
+  int sp = 0;
 	do {
-		char *token = strtok(NULL, " ,");
-		if (token == NULL) {
+    char *token = sp == 0 ? strtok(NULL, " ,") : strtok(NULL, ",");
+    if (token == NULL) {
 			break;
-    		}
-		tokenized->operand[i] = malloc(OPERAND_LENGTH);
-		strcpy(tokenized->operand[i], token);
-		i++;
+    }
+    if (token[0] == '[' || sp != 0) {
+      stack[sp] = malloc(VAL_LENGTH);
+      strcpy(stack[sp], token);
+      sp++;
+    }
+    if (token[strlen(token) - 1] == ']') {
+      char *realtoken = malloc(OPERAND_LENGTH);
+      strcpy(realtoken, "\0");
+      for (int i = 0; i < sp; i++) {
+        strcat(realtoken, stack[i]);
+        if (i != sp - 1) {
+          strcat(realtoken, ",");
+        }
+        free(stack[i]);
+      }
+      sp = 0;
+      tokenized->operand[i] = malloc(OPERAND_LENGTH);
+      strcpy(tokenized->operand[i], realtoken);
+      i++;
+      free(realtoken);
+    } else if (sp == 0) {
+      tokenized->operand[i] = malloc(OPERAND_LENGTH);
+      strcpy(tokenized->operand[i], token);
+      i++;
+    }
 	} while (tokenized->operand[i - 1] != NULL);
 	
-	tokenized->num_operands = i;	
-  	return tokenized;
+	tokenized->num_operands = i;
+  return tokenized;
 }
 
 void free_tokenized_instruction(TokenizedInstruction *tokenized) {
@@ -85,4 +112,14 @@ Operation to_operation_enum(char *token) {
 	}
 	assert(strcmp(token, "b") == 0);
 	return B;
+}
+
+int main(void) {
+  char ins[OPERAND_LENGTH];
+  strcpy(ins, "mov r2,#1,[r1,r2,lsl #2]");
+  TokenizedInstruction *tokenins = tokenize(ins);
+  for (int i = 0; i < tokenins->num_operands; i++) {
+    printf("%s\n", tokenins->operand[i]);
+  }
+  free_tokenized_instruction(tokenins);
 }

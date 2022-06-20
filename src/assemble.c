@@ -135,7 +135,7 @@ void load_assembly(char **argv){
 		}
 		else {
 			address++;
-			// address = address + 0x4;
+			//address = address + 0x4;
 		}
 	}
 	fclose(fp);
