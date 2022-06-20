@@ -88,9 +88,9 @@ void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_tabl
 		// if 1st operand is a label , replace it with its reference	
 		uint32_t res = lookup(instruction->operand[0],symbol_table);
 		if (res!=-1){
-			char buffer[50];
-			snprintf(buffer, sizeof(buffer),"%x",res);
-			instruction->operand[0] = buffer;
+			char buffer[33];
+			sprintf(buffer, "%x", res);
+			strcpy(instruction->operand[0], buffer);
 		}
 		uint32_t result = assemble_branch(instruction,pc);
 		binary_writer(dest_file,result);
@@ -121,14 +121,13 @@ void load_assembly(char **argv){
 
 		//process the buffer
 		if (islabel(buffer)){
-			address = 4*address;
 			//truncating the string before the :
 			buffer[strlen(buffer)-1] = '\0';
-			insert(buffer,address, symbol_table);
+			insert(buffer, 4*address, symbol_table);
 		}
 		else {
 			address++;
-			// address = address + 0x4;
+			//address = address + 0x4;
 		}
 	}
 	fclose(fp);
@@ -161,7 +160,7 @@ void load_assembly(char **argv){
 			free_tokenized_instruction(instruct);
 		}
 	}
-	free(fp2);
+	fclose(fp2);
 
 	//After we have processed all the instructions, writing the single data transfer expressions at the end of the assembled file
 	if (size_array != 0){
