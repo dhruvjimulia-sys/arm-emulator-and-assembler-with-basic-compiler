@@ -10,7 +10,6 @@ typedef enum {
 	ANDEQ,
 	AND,
 	EOR,
-	PRINT,
 	ORR,
 	LSL,
 	MOV,
@@ -27,15 +26,10 @@ typedef enum {
 	BLT,
 	BGT,
 	BLE,
-	B
+	B,
+	PRINT,
+	INPUT
 } Operation;
-
-typedef enum {
-	LSL_SHIFT,
-	LSR_SHIFT,
-	ASR_SHIFT,
-	ROR_SHIFT
-} Shift;
 
 typedef struct {
 	Operation opcode;

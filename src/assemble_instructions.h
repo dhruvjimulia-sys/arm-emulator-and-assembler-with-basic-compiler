@@ -19,6 +19,9 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 //assemble a branch instruction
 uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address);
 
+//assemble special instructions added for extension implementation
+uint32_t assemble_special(TokenizedInstruction *token_instr);
+
 //set operand2 field or offset field to the value of the <#expression>
 void parse_expression(uint32_t *assembled_instr, char *operand_as_str);
 
@@ -26,6 +29,6 @@ void parse_expression(uint32_t *assembled_instr, char *operand_as_str);
 void encode_immediate_op2(uint32_t *assembled_instr, uint32_t immediate, unsigned int shift_start_bit);
 
 //encode a shifted register into assembled instruction
-void encode_shifted_reg(char *shift, char *shift_by, uint32_t *assembled_instr);
+void encode_shifted_reg(char *reg, const char *shift, char *shift_by, uint32_t *assembled_instr);
 
 #endif
