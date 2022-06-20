@@ -11,6 +11,13 @@
 
 #define MAX_LINE_SIZE 512
 
+uint32_t reverse(uint32_t value){
+	return (((value & 0x000000FF) << 24) |
+            ((value & 0x0000FF00) <<  8) |
+            ((value & 0x00FF0000) >>  8) |
+            ((value & 0xFF000000) >> 24));
+}
+
 //printing binary instructions onto the destination file
 void binary_writer(char* dest_file, uint32_t result){
 	FILE *fp = fopen(dest_file,"a");
@@ -30,7 +37,8 @@ void binary_writer_array(char *dest_file, int32_t *result_array, int size){
 	assert(fp != NULL);
 	
 	for (int i=0; i < size; i++){
-		fwrite(&result_array[i],4,1,fp);
+		uint32_t result = reverse(result_array[i]);
+		fwrite(&result,4,1,fp);
 	}
 
 	if (ferror(fp)){
