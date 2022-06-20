@@ -19,22 +19,26 @@
 #define ALWAYS_COND 0xe
 #define TEST_INSTR_OPERAND_COUNT 2
 #define COMPUTATION_INSTR_OPERAND_COUNT 3
-#define SINGLE_OPERAND 1
-#define BRANCH_ONLY_START_BIT 24
-#define BRANCH_ONLY 0xa
+#define BRANCH_INSTR 0x5
 #define MULT_ONLY 0x9
 #define MULT_ONLY_START_BIT 4
-#define OP2_OR_OFFSET 0
+#define OP2_OFFSET_REG 0
 #define SHIFT_TO_IMM 8
-#define SHIFT_AS_INT 7
-#define SHIFT_AS_REG 8
+#define SHIFT_BY_INT 7
+#define SHIFT_BY_REG 8
 #define SHIFT_TYPE_BITS 5
 #define SHIFT_INT_OR_REG_BIT 4
 #define PIPELINE_EFFECT 8
-#define TRANSFER_ONLY 0x1
-#define TRANSFER_ONLY_START_BIT 26
+#define TRANSFER_INSTR 0x2
+#define INSTR_FIELD 25
+#define PRINT_INSTR
 #define MAX_REPRESENTABLE 0xff
 #define MAX_ROTATION 16
+
+#define LSL_SHIFT 0
+#define LSR_SHIFT 1
+#define ASR_SHIFT 2
+#define ROR_SHIFT 3
 
 void set_bits_to(uint32_t *instr, uint32_t input, unsigned int starting_at) {
 	*instr |= (input << starting_at);
@@ -43,7 +47,7 @@ void set_bits_to(uint32_t *instr, uint32_t input, unsigned int starting_at) {
 uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 	uint32_t assembled_instr = 0;
 	uint32_t opcode;
-	unsigned int shifted_reg;
+	unsigned int shifted_reg = 0;
 
 	//int i determines position of operand2 in the operands array (based on # of operands in the instructions)
 	//preset to 1 (for tst, teq, cmp, mov)
@@ -90,6 +94,9 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 	}
 
 	set_bits_to(&assembled_instr, opcode, OPCODE_START_BIT);
+	
+	//set condition field to ALWAYS
+        set_bits_to(&assembled_instr, ALWAYS_COND, COND_FIELD_START_BIT);
 
 	//instructions that do not compute result, but set the CPSR flags
 	if (opcode >= 0x8 && opcode <= 0xa) {
@@ -102,9 +109,9 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 		//assert(token_instr->num_operands == TEST_INSTR_OPERAND_COUNT);
 		set_bits_to(&assembled_instr, SET_BIT, S_BIT);
 	} else {
-		//set rd bits
-		uint32_t rd = strtoul(token_instr->operand[0] + 1, NULL, 0);
-		set_bits_to(&assembled_instr, rd, RD_START_BIT);
+		//set destination register bits
+		uint32_t dest_reg = strtoul(token_instr->operand[0] + 1, NULL, 0);
+		set_bits_to(&assembled_instr, dest_reg, RD_START_BIT);
 
 	}
 
@@ -120,7 +127,7 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 		i = 2;
 	}
 	
-	if (token_instr->opcode != MOV) {
+	if (opcode != 0xd) {
 		//set rn bits
 		uint32_t rn = strtol(token_instr->operand[i - 1] + 1, NULL, 0);
 		set_bits_to(&assembled_instr, rn, RN_START_BIT);
@@ -129,8 +136,9 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 	if (((token_instr->operand[i])[0] == '#') || ((token_instr->operand[i])[0] == '=')) {
 		//set operand2 field to expression
 		if (token_instr->opcode == LSL) { //[PC, #expression]
-			uint32_t expression = strtoul(token_instr->operand[i] + 1, NULL, 0);
-			set_bits_to(&assembled_instr, expression, SHIFT_AS_INT);
+			char special_shift[4] = "lsl";
+			encode_shifted_reg(token_instr->operand[0], special_shift, token_instr->operand[i], &assembled_instr);	
+			return assembled_instr;
 		} else {
 			//not lsl, set operand2 to value of expression
 			parse_expression(&assembled_instr, token_instr->operand[i]);
@@ -141,15 +149,12 @@ uint32_t assemble_data_processing(TokenizedInstruction *token_instr) {
 	} else {
 		//set rm bits
 		uint32_t rm = strtol(token_instr->operand[i] + 1, NULL, 0);
-		set_bits_to(&assembled_instr, rm, OP2_OR_OFFSET);
+		set_bits_to(&assembled_instr, rm, OP2_OFFSET_REG);
 	}
 
 	if (shifted_reg) {
-		encode_shifted_reg(token_instr->operand[i+1], token_instr->operand[i+2], &assembled_instr);
+		encode_shifted_reg(token_instr->operand[i], token_instr->operand[i+1], token_instr->operand[i+2], &assembled_instr);
 	}
-
-	//set condition field to ALWAYS
-	set_bits_to(&assembled_instr, ALWAYS_COND, COND_FIELD_START_BIT);
 
 	return assembled_instr;
 }
@@ -188,14 +193,14 @@ uint32_t assemble_multiply(TokenizedInstruction *token_instr) {
 	return assembled_instr;
 }
 
-uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32_t pc_address, uint32_t last_address, int32_t *eof_expressions, int *size_array) {
+uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32_t pc_address, uint32_t no_of_instructions, int32_t *eof_expressions, int *size_array) {
 	uint32_t assembled_instr = 0;
-	static int offset_from_last_address = 0;
+	static int offset_from_last_address = 1;
 	char *address_tokens[2];
 	int num_tokens = 0;	
 	
 	//set bits specific to single data transfer
-        set_bits_to(&assembled_instr, TRANSFER_ONLY, TRANSFER_ONLY_START_BIT);
+        set_bits_to(&assembled_instr, TRANSFER_INSTR, INSTR_FIELD);
 
         //set cond field
         set_bits_to(&assembled_instr, ALWAYS_COND, COND_FIELD_START_BIT);
@@ -228,13 +233,13 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 				set_bits_to(&assembled_instr, SET_BIT, P_BIT);
 
 				//calculate offset
-				uint32_t offset = (last_address + offset_from_last_address) - (pc_address);
+				uint32_t offset = (no_of_instructions + offset_from_last_address) - (pc_address - 8);
 				
 				//set rn (base register) to PC
 				set_bits_to(&assembled_instr, PC_REGISTER, RN_START_BIT);
 
 				//set offset
-				set_bits_to(&assembled_instr, offset, OP2_OR_OFFSET);
+				set_bits_to(&assembled_instr, offset, OP2_OFFSET_REG);
 				
 				return assembled_instr;
 			}
@@ -274,7 +279,7 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 	}
 	
 	if (offset_exp) {
-		set_bits_to(&assembled_instr, offset_exp, OP2_OR_OFFSET);
+		set_bits_to(&assembled_instr, offset_exp, OP2_OFFSET_REG);
 	}
 
 	return assembled_instr;
@@ -320,16 +325,36 @@ uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address)
 	offset = (jump_address - (pc_address - PIPELINE_EFFECT)) >> 2;
 	
 	//set offset field with signed 24 bit offset (after being shifted right 2 bits)
-	set_bits_to(&assembled_instr, offset, OP2_OR_OFFSET);
+	set_bits_to(&assembled_instr, offset, OP2_OFFSET_REG);
 
 	//set condition field in assembled instruction
 	set_bits_to(&assembled_instr, cond_field, COND_FIELD_START_BIT);
 	
 	//set bits specific to BRANCH instruction
-	set_bits_to(&assembled_instr, BRANCH_ONLY, BRANCH_ONLY_START_BIT);
+	set_bits_to(&assembled_instr, BRANCH_INSTR, INSTR_FIELD);
 
 	return assembled_instr;
 }
+
+uint32_t assemble_special(TokenizedInstruction *token_instr) {
+	uint32_t assembled_instr = 0;
+	
+	//set cond field to always
+	set_bits_to(&assembled_instr, ALWAYS_COND, COND_FIELD_START_BIT);
+
+	if (token_instr->opcode == PRINT) {
+		set_bits_to(&assembled_instr, PRINT_INSTR, INSTR_FIELD);
+	} else if (token_instr->opcode == INPUT) {
+		set_bits_to(&assembled_instr, INPUT_INSTR, INSTR_FIELD);
+		//set extra bit for input format??
+	}
+
+	uint32_t mem_address = strtol(token_instr->operand[0]+1);
+	set_bits_to(&assembled_instr, mem_address, OP2_OFFSET_REG);
+
+	return assembled_instr;
+}
+		
 
 void parse_expression(uint32_t *assembled_instr, char *operand_as_str) {
 	int32_t num_constant = strtol((operand_as_str + 1), NULL, 0);
@@ -339,7 +364,7 @@ void parse_expression(uint32_t *assembled_instr, char *operand_as_str) {
 		encode_immediate_op2(assembled_instr, num_constant, SHIFT_TO_IMM);
 	} else {
 		//set operand equal to expression
-		set_bits_to(assembled_instr, num_constant, OP2_OR_OFFSET);
+		set_bits_to(assembled_instr, num_constant, OP2_OFFSET_REG);
 	}
 
 }
@@ -362,21 +387,21 @@ void encode_immediate_op2(uint32_t *assembled_instr, uint32_t immediate, unsigne
 	
 	uint32_t rot_val = MAX_ROTATION - (shift / 2);
 
-	set_bits_to(assembled_instr, immediate, OP2_OR_OFFSET);
+	set_bits_to(assembled_instr, immediate, OP2_OFFSET_REG);
 	set_bits_to(assembled_instr, rot_val, shift_start_bit);
 }
 
-void encode_shifted_reg(char *shift, char *shift_by, uint32_t *assembled_instr) {
+void encode_shifted_reg(char *reg, const char *shift, char *shift_by, uint32_t *assembled_instr) {
 	uint32_t shift_type = 0;
 	uint32_t shift_val = 0;
 
-	if(strcmp(shift, "lsl") == 0) {
+	if(!strncmp(shift, "lsl\0", 3)) {
 		shift_type = LSL_SHIFT;
-	} else if (strcmp(shift, "lsr") == 0) {
+	} else if (!strncmp(shift, "lsr\0", 3)) {
 		shift_type = LSR_SHIFT;
-	} else if (strcmp(shift, "asr") == 0) {
+	} else if (!strncmp(shift, "asr\0", 3)) {
 		shift_type = ASR_SHIFT;
-	} else if (strcmp(shift, "ror") == 0) {
+	} else if (!strncmp(shift, "ror\0", 3)) {
 		shift_type = ROR_SHIFT;
 	} else {
 		fprintf(stderr, "Invalid shift type %s", shift);
@@ -385,13 +410,18 @@ void encode_shifted_reg(char *shift, char *shift_by, uint32_t *assembled_instr) 
 	//assign shift type bits
 	set_bits_to(assembled_instr, shift_type, SHIFT_TYPE_BITS);
 
+	//assign register bits
+	uint32_t reg_to_shift = strtoul(reg + 1, NULL, 0);
+	set_bits_to(assembled_instr, reg_to_shift, OP2_OFFSET_REG);
+
 	if (shift_by[0] == '#') {
 		uint32_t shift_int = strtol(shift_by + 1, NULL, 0);
-		encode_immediate_op2(assembled_instr, shift_int, SHIFT_AS_INT);
+		set_bits_to(assembled_instr, shift_int, SHIFT_BY_INT);
 	} else {
 		set_bits_to(assembled_instr, SET_BIT, SHIFT_INT_OR_REG_BIT);
 
 		shift_val = strtoul(shift_by + 1, NULL, 0);
-		set_bits_to(assembled_instr, shift_val, SHIFT_TO_IMM);
+		set_bits_to(assembled_instr, shift_val, SHIFT_BY_REG);
 	} 
 }
+
