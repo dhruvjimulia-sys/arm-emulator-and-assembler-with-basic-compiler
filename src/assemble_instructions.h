@@ -4,9 +4,6 @@
 #include <stdint.h>
 #include "assembler_type_definitions.h"
 
-//rotate value right given amount of times
-uint32_t rotate_right(uint32_t n, unsigned int shift_amount);
-
 //set necessary bits to 1 in a 32bit value
 void set_bits_to(uint32_t *instr, uint32_t input, unsigned int starting_at);
 
@@ -23,6 +20,12 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address);
 
 //set operand2 field or offset field to the value of the <#expression>
-uint32_t parse_expression(char *operand_as_str);
+void parse_expression(uint32_t *assembled_instr, char *operand_as_str);
+
+//encodes an immediate value to fit inside the operand 2 field
+void encode_immediate_op2(uint32_t *assembled_instr, uint32_t immediate, unsigned int shift_start_bit);
+
+//encode a shifted register into assembled instruction
+void encode_shifted_reg(char *shift, char *shift_by, uint32_t *assembled_instr);
 
 #endif

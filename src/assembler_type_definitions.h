@@ -30,6 +30,13 @@ typedef enum {
 	B
 } Operation;
 
+typedef enum {
+	LSL_SHIFT,
+	LSR_SHIFT,
+	ASR_SHIFT,
+	ROR_SHIFT
+} Shift;
+
 typedef struct {
 	Operation opcode;
 	char **operand;

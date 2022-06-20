@@ -16,7 +16,7 @@ TokenizedInstruction* tokenize(char *instruction) {
 	tokenized->opcode = to_operation_enum(token);
 	uint32_t i = 0;
 	do {
-		char *token = strtok(NULL, ",");
+		char *token = strtok(NULL, " ,");
 		if (token == NULL) {
 			break;
     		}
@@ -83,6 +83,6 @@ Operation to_operation_enum(char *token) {
 	} else if (strcmp(token, "ble") == 0) {
 		return BLE;
 	}
-	assert(strcmp(token, "b"));
+	assert(strcmp(token, "b") == 0);
 	return B;
 }
