@@ -206,7 +206,7 @@ uint32_t assemble_multiply(TokenizedInstruction *token_instr) {
 
 uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32_t pc_address, uint32_t no_of_instructions, int32_t *eof_expressions, int *size_array) {
 	uint32_t assembled_instr = 0;
-	static int offset_from_last_address = 1;
+	//static int offset_from_last_address = 1;
 	char *address_tokens[2];
 	int num_tokens = 0;	
 	
@@ -237,14 +237,16 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 				return assembled_instr;
 			} else {
 				//add value of expression to end of file
-				eof_expressions[offset_from_last_address - 1] = expression;
+				//eof_expressions[offset_from_last_address - 1] = expression;
+				eof_expressions[*size_array] = expression;
 				*size_array = *size_array + 1;
 
 				//set P flag
 				set_bits_to(&assembled_instr, SET_BIT, P_BIT);
 
 				//calculate offset
-				uint32_t offset = (no_of_instructions + offset_from_last_address) - (pc_address - 8);
+				//uint32_t offset = (no_of_instructions + offset_from_last_address) - (pc_address - 8);
+				uint32_t offset = 0x4 * (no_of_instructions - pc_address + (*size_array-1)) - 0x8;
 				
 				//set rn (base register) to PC
 				set_bits_to(&assembled_instr, PC_REGISTER, RN_START_BIT);
