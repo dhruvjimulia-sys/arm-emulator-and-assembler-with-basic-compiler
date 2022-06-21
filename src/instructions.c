@@ -259,20 +259,21 @@ void execute_single_data_transfer(struct Processor* processor, uint32_t *instr) 
 void print_basic(struct Processor *processor, uint32_t *instr) {
 	bool is_string = extract_bit(22, instr);
 	bool reg = extract_bit(21, instr);
-	uint32_t location = create_mask(0, 20, instr);
-	uint32_t start_address = reg ? *(processor->registers + location) : location;
+	uint32_t start_address = create_mask(0, 20, instr);
 
 	if (is_string) {
-		char ch = *(processor->memory + start_address);
+		uint32_t location = reg ? *(processor->registers + start_address) : start_address;
+		char ch = *(processor->memory + location);
 		int i = 1;
 		while (ch != '\0') {
 			printf("%c", ch);
-			char ch = *(processor->memory + start_address + i);
+			char ch = *(processor->memory + location + i);
 			i++;
 		}
 	}
 	else {
-		printf("%d", *(processor->memory + start_address));
+		uint32_t location = reg ? *(processor->registers + start_address) : *(processor->memory + start_address);
+		printf("%d", location);
 	}
 	printf("\n");
 }
@@ -280,14 +281,15 @@ void print_basic(struct Processor *processor, uint32_t *instr) {
 void input_basic(struct Processor *processor, uint32_t *instr) {
 	bool is_string = extract_bit(22, instr);
 	bool reg = extract_bit(21, instr);
-	uint32_t location = create_mask(0, 20, instr);
-	uint32_t start_address = reg ? *(processor->registers + location) : location;
+	uint32_t start_address = create_mask(0, 20, instr);
 
 	if (is_string) {
+		uint32_t location = reg ? *(processor->registers + start_address) : start_address;
 		scanf("%s", *(processor->memory + start_address));
 	}
 	else {
-		scanf("%d", *(processor->memory + start_address));
+		uint32_t location = reg ? *(processor->registers + start_address) : *(processor->memory + start_address);
+		scanf("%d", location);
 	}
 	printf("\n");
 }
