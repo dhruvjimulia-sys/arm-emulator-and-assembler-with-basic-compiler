@@ -123,3 +123,4 @@ Operation to_operation_enum(char *token) {
 		fprintf(stderr, "Invalid opcode mnemonic: %s", token);
 		exit(EXIT_FAILURE);
 	}
+}
