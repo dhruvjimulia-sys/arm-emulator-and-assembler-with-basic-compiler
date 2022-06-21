@@ -65,61 +65,63 @@ void free_tokenized_instruction(TokenizedInstruction *tokenized) {
 }
 
 Operation to_operation_enum(char *token) {
-	if (strcmp(token, "add") == 0) {
+	if (!strcmp(token, "add")) {
 		return ADD;
-	} else if (strcmp(token, "sub") == 0) {
+	} else if (!strcmp(token, "sub")) {
 		return SUB;
-	} else if (strcmp(token, "rsb") == 0) {
+	} else if (!strcmp(token, "rsb")) {
 		return RSB;
-	} else if (strcmp(token, "andeq") == 0) {
+	} else if (!strcmp(token, "andeq")) {
 		return ANDEQ;
-	} else if (strcmp(token, "and") == 0) {
+	} else if (!strcmp(token, "and")) {
 		return AND;
-	} else if (strcmp(token, "eor") == 0) {
+	} else if (!strcmp(token, "eor")) {
 		return EOR;
-	} else if (strcmp(token, "orr") == 0) {
+	} else if (!strcmp(token, "orr")) {
 		return ORR;
-	} else if (strcmp(token, "lsl") == 0) {
+	} else if (!strcmp(token, "lsl")) {
 		return LSL;
-	} else if (strcmp(token, "mov") == 0) {
+	} else if (!strcmp(token, "mov")) {
 		return MOV;
-	} else if (strcmp(token, "tst") == 0) {
+	} else if (!strcmp(token, "tst")) {
 		return TST;
-	} else if (strcmp(token, "teq") == 0) {
+	} else if (!strcmp(token, "teq")) {
 		return TEQ;
-	} else if (strcmp(token, "cmp") == 0) {
+	} else if (!strcmp(token, "cmp")) {
 		return CMP;
-	} else if (strcmp(token, "mul") == 0) {
+	} else if (!strcmp(token, "mul")) {
 		return MUL;
-	} else if (strcmp(token, "mla") == 0) {
+	} else if (!strcmp(token, "mla")) {
 		return MLA;
-	} else if (strcmp(token, "ldr") == 0) {
+	} else if (!strcmp(token, "ldr")) {
 		return LDR;
-	} else if (strcmp(token, "str") == 0) {
+	} else if (!strcmp(token, "str")) {
 		return STR;
-	} else if (strcmp(token, "beq") == 0) {
+	} else if (!strcmp(token, "beq")) {
 		return BEQ;
-	} else if (strcmp(token, "bne") == 0) {
+	} else if (!strcmp(token, "bne")) {
 		return BNE;
-	} else if (strcmp(token, "bge") == 0) {
+	} else if (!strcmp(token, "bge")) {
 		return BGE;
-	} else if (strcmp(token, "blt") == 0) {
+	} else if (!strcmp(token, "blt")) {
 		return BLT;
-	} else if (strcmp(token, "bgt") == 0) {
+	} else if (!strcmp(token, "bgt")) {
 		return BGT;
-	} else if (strcmp(token, "ble") == 0) {
+	} else if (!strcmp(token, "ble")) {
 		return BLE;
+	} else if (!strcmp(token, "b")) {
+		return B;
+	} else if (!strcmp(token, "prints")) {
+		return PRINTS;
+	} else if (!strcmp(token, "printn")) {
+		return PRINTN;
+	} else if (!strcmp(token, "inputs")) {
+		return INPUTS;
+	} else if (!strcmp(token, "inputn")) {
+		return INPUTN;
+	} else {
+		fprintf(stderr, "Invalid opcode mnemonic: %s", token);
+		exit(EXIT_FAILURE);
 	}
-	assert(strcmp(token, "b") == 0);
-	return B;
-}
 
-int main(void) {
-  char ins[OPERAND_LENGTH];
-  strcpy(ins, "mov r2,#1,[r1,r2,lsl #2]");
-  TokenizedInstruction *tokenins = tokenize(ins);
-  for (int i = 0; i < tokenins->num_operands; i++) {
-    printf("%s\n", tokenins->operand[i]);
-  }
-  free_tokenized_instruction(tokenins);
 }

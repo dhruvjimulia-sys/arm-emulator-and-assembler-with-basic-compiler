@@ -102,9 +102,12 @@ void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_tabl
 		}
 		uint32_t result = assemble_branch(instruction,pc);
 		binary_writer(dest_file,result);
-	}
-	else {
-		printf("Incorrect opcode detected");
+	} else if ((instruction->opcode) <= INPUTN) {
+		uint32_t result = assemble_special(instruction);
+		binary_writer(dest_file, result);
+	} else {
+		fprintf(stderr, "Incorrect opcode detected");
+		exit(EXIT_FAILURE);
 	}
 }
 
