@@ -4,38 +4,48 @@
 #include <string.h>
 #include "assemble_instructions.h"
 
+/* bit fields start bit */
 #define RD_START_BIT 12
 #define RN_START_BIT 16
 #define PC_REGISTER 0xf
-#define SET_BIT 0x1
-#define S_BIT 20
-#define L_BIT 20
-#define I_BIT 25
-#define A_BIT 21
-#define P_BIT 24
-#define U_BIT 23
 #define OPCODE_START_BIT 21
 #define COND_FIELD_START_BIT 28
-#define ALWAYS_COND 0xe
-#define TEST_INSTR_OPERAND_COUNT 2
-#define COMPUTATION_INSTR_OPERAND_COUNT 3
-#define BRANCH_INSTR 0x5
-#define MULT_ONLY 0x9
 #define MULT_ONLY_START_BIT 4
 #define OP2_OFFSET_REG 0
 #define SHIFT_TO_IMM 8
 #define SHIFT_BY_INT 7
 #define SHIFT_BY_REG 8
 #define SHIFT_TYPE_BITS 5
+#define INSTR_FIELD 25
+#define PRINT_INPUT_INSTR 0x7
+
+/* positions of flag bits */
+#define S_BIT 20
+#define L_BIT 20
+#define I_BIT 25
+#define A_BIT 21
+#define P_BIT 24
+#define U_BIT 23
+#define SHIFT_INT_OR_REG_BIT 4
+/* for additional extension instructions imlemented */
+#define T_BIT 22
+#define R_BIT 21
+#define SPECIAL_I_BIT 23
+
+/* values based on instruction */
+#define SET_BIT 0x1
+#define ALWAYS_COND 0xe
+#define TEST_INSTR_OPERAND_COUNT 2
+#define COMPUTATION_INSTR_OPERAND_COUNT 3
+#define BRANCH_INSTR 0x5
+#define MULT_ONLY 0x9
 #define SHIFT_INT_OR_REG_BIT 4
 #define PIPELINE_EFFECT 8
 #define TRANSFER_INSTR 0x2
-#define INSTR_FIELD 25
-#define PRINT_INSTR 0x6
-#define INPUT_INSTR 0x7
 #define MAX_REPRESENTABLE 0xff
 #define MAX_ROTATION 16
 
+/* shifter values */
 #define LSL_SHIFT 0
 #define LSR_SHIFT 1
 #define ASR_SHIFT 2
@@ -164,7 +174,7 @@ uint32_t assemble_multiply(TokenizedInstruction *token_instr) {
 	uint32_t assembled_instr = 0;
 
 	//set rd register
-	uint32_t rd = strtol(++(token_instr->operand[0]), NULL, 0);
+	uint32_t rd = strtol(token_instr->operand[0] + 1, NULL, 0);
 	set_bits_to(&assembled_instr, rd, RN_START_BIT);
 	
 	//set rm register
@@ -342,12 +352,32 @@ uint32_t assemble_special(TokenizedInstruction *token_instr) {
 	
 	//set cond field to always
 	set_bits_to(&assembled_instr, ALWAYS_COND, COND_FIELD_START_BIT);
+	
+	//set instruction field bits to input and print specifiers (these were chosen by programmers)
+	set_bits_to(&assembled_instr, PRINT_INPUT_INSTR, INSTR_FIELD);
 
-	if (token_instr->opcode == PRINT) {
-		set_bits_to(&assembled_instr, PRINT_INSTR, INSTR_FIELD);
-	} else if (token_instr->opcode == INPUT) {
-		set_bits_to(&assembled_instr, INPUT_INSTR, INSTR_FIELD);
-		//set extra bit for input format??
+	//sets T bit based on format of operand (string or number)
+	//T bit is set when the operand is in form of string
+	switch(token_instr->opcode) {
+		case PRINTS:
+			set_bits_to(&assembled_instr, SET_BIT, T_BIT);
+		case PRINTN:
+			set_bits_to(&assembled_instr, SET_BIT, SPECIAL_I_BIT);
+			break;
+		case INPUTS:
+			set_bits_to(&assembled_instr, SET_BIT, T_BIT);
+		case INPUTN:
+			set_bits_to(&assembled_instr, SET_BIT, SPECIAL_I_BIT);
+			break;
+		default:
+			fprintf(stderr, "Invalid opcode %d for special instruction", token_instr->opcode);
+                        exit(EXIT_FAILURE);
+	}
+
+	if (token_instr->operand[0][0] == 'r') {
+		//R bit is set if the operand is the content of a register
+		//if not set, operand is an immediate address
+		set_bits_to(&assembled_instr, SET_BIT, R_BIT);
 	}
 
 	uint32_t mem_address = strtoul(token_instr->operand[0]+1, NULL, 0);

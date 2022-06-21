@@ -27,8 +27,10 @@ typedef enum {
 	BGT,
 	BLE,
 	B,
-	PRINT,
-	INPUT
+	PRINTS,
+	PRINTN,
+	INPUTS,
+	INPUTN
 } Operation;
 
 typedef struct {
