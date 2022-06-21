@@ -114,6 +114,7 @@ Operation to_operation_enum(char *token) {
 	return B;
 }
 
+/*
 int main(void) {
   char ins[OPERAND_LENGTH];
   strcpy(ins, "mov r2,#1,[r1,r2,lsl #2]");
@@ -123,3 +124,4 @@ int main(void) {
   }
   free_tokenized_instruction(tokenins);
 }
+*/
