@@ -164,7 +164,7 @@ uint32_t assemble_multiply(TokenizedInstruction *token_instr) {
 	uint32_t assembled_instr = 0;
 
 	//set rd register
-	uint32_t rd = strtol(++(token_instr->operand[0]), NULL, 0);
+	uint32_t rd = strtol(token_instr->operand[0] + 1, NULL, 0);
 	set_bits_to(&assembled_instr, rd, RN_START_BIT);
 	
 	//set rm register
