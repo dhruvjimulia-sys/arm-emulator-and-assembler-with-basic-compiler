@@ -26,13 +26,17 @@ typedef enum {
 	BLT,
 	BGT,
 	BLE,
-	B
+	B,
+	PRINTS,
+	PRINTN,
+	INPUTS,
+	INPUTN
 } Operation;
 
 typedef struct {
-        Operation opcode;
-        char **operand;
-        uint32_t num_operands;
+	Operation opcode;
+	char **operand;
+	uint32_t num_operands;
 } TokenizedInstruction;
 
 #endif
