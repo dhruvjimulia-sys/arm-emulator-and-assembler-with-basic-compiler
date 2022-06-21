@@ -36,11 +36,18 @@ bool process_instructions(uint8_t* instruction_bytes, struct Processor* processo
 		case DATA_PROCESS :
 			execute_data_processing_instruction(processor, instruction);
 			return false;
+		case PRINT :
+			print_basic(processor, instruction);
+			return false;
+		case INPUT :
+			input_basic(processor, instruction);
+			return false;
 		default:
 			perror("Instruction not identified");
 			return false;
 	}
 }
+
 
 void emulator_loop(struct Processor* processor) {
 	uint8_t* instructions = processor->memory;

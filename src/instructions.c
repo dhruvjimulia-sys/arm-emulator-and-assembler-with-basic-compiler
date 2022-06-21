@@ -191,6 +191,8 @@ void execute_multiply_instruction(struct Processor* processor, uint32_t *instr) 
 	}
 }
 
+
+
 void execute_single_data_transfer(struct Processor* processor, uint32_t *instr) {
 	bool p_bit = extract_bit(24, instr);
 	bool u_bit = extract_bit(23, instr);
@@ -253,3 +255,40 @@ void execute_single_data_transfer(struct Processor* processor, uint32_t *instr) 
 		}
 	}
 }
+
+void print_basic(struct Processor *processor, uint32_t *instr) {
+	bool is_string = extract_bit(22, instr);
+	bool reg = extract_bit(21, instr);
+	uint32_t location = create_mask(0, 20, instr);
+	uint32_t start_address = reg ? *(processor->registers + location) : location;
+
+	if (is_string) {
+		char ch = *(processor->memory + start_address);
+		int i = 1;
+		while (ch != '\0') {
+			printf("%c", ch);
+			char ch = *(processor->memory + start_address + i);
+			i++;
+		}
+	}
+	else {
+		printf("%d", *(processor->memory + start_address));
+	}
+	printf("\n");
+}
+
+void input_basic(struct Processor *processor, uint32_t *instr) {
+	bool is_string = extract_bit(22, instr);
+	bool reg = extract_bit(21, instr);
+	uint32_t location = create_mask(0, 20, instr);
+	uint32_t start_address = reg ? *(processor->registers + location) : location;
+
+	if (is_string) {
+		scanf("%s", *(processor->memory + start_address));
+	}
+	else {
+		scanf("%d", *(processor->memory + start_address));
+	}
+	printf("\n");
+}
+

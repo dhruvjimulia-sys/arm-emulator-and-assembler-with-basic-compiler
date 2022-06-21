@@ -24,4 +24,8 @@ void execute_multiply_instruction(struct Processor* processor, uint32_t *instr);
 
 void execute_single_data_transfer(struct Processor* processor, uint32_t *instr);
 
+void print_basic(struct Processor* processor, uint32_t *instr);
+
+void input_basic(struct Processor* processor, uint32_t *instr);
+
 #endif

@@ -101,6 +101,12 @@ instr_type get_instr_type(uint32_t *instr) {
 			return TRANSFER;
 		case 2:
 			return BRANCH;
+		case 3:
+			if (extract_bit(23, instr)) {
+				return INPUT;
+			} else {
+				return PRINT;
+			}
 		default:
 			exit(EXIT_FAILURE);
 	}
