@@ -37,7 +37,7 @@ void binary_writer_array(char *dest_file, int32_t *result_array, int size){
 	assert(fp != NULL);
 	
 	for (int i=0; i < size; i++){
-		uint32_t result = reverse(result_array[i]);
+		uint32_t result = result_array[i];
 		fwrite(&result,4,1,fp);
 	}
 
@@ -50,33 +50,6 @@ void binary_writer_array(char *dest_file, int32_t *result_array, int size){
 bool islabel(char *line){
 	return line[strlen(line)-1] == ':';
 }
-
-char **allocArray (unsigned int rows, unsigned int cols){
-	char** array;
-	unsigned int i;
-
-	array = (char**) malloc (sizeof(char*) * rows );
-	if (!array){
-		return NULL;
-	}
-	array[0] = (char*) malloc (rows*cols*sizeof(char*));
-	if (!array[0]){
-		free(array);
-		return NULL;
-	}
-	for (i=1; i < rows; i++){
-		array[i] = array[i-1] + cols;
-	}
-	return array;
-}
-
-void freeArray(char ** array){
-	free(array[0]);
-	free(array);
-}
-
-//typedef uint32_t (*func_pointer)(TokenizedInstruction);
-//func_pointer array_fn_pointers = {assemble_data_processing, assemble_multiply, assemble_single_data_transfer, assemble_branch};
 
 void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_table, uint32_t pc, uint32_t last_address, char *dest_file, int32_t *array_single_data,int *size_array){
 	//call the instruction based on the opcode
@@ -175,84 +148,12 @@ void load_assembly(char **argv){
 
 	//After we have processed all the instructions, writing the single data transfer expressions at the end of the assembled file
 	if (size_array != 0){
-		binary_writer_array(argv[2],array_single_data,size_array); 
+		binary_writer_array(argv[2],array_single_data,size_array); 	
 	}
 
 	free(array_single_data);
-
 	exit(EXIT_SUCCESS);
 	
-	
-
-	/*
-	int numlines=0;
-	
-	// counting the no. of new lines
-	for (int c = fgetc(fp); c!= EOF; c = fgetc(fp)){
-		if (c == '\n'){++numlines;}
-	}
-
-	// Creating a 2d array of strings to store the read file 
-	char **data = allocArray(numlines,MAX_LINE_SIZE);
-	assert (data != NULL);
-
-	// Creating an array of integers to write the single data instructions at the end of the assembled file
-        int array_length = 100;
-        int32_t *array_single_data = malloc(array_length*sizeof(int32_t));
-	int size_array = 0;
-	
-
-	
-	//first pass over source code
-	char buffer[MAX_LINE_SIZE];
-	char *read = fgets(buffer,MAX_LINE_SIZE,fp);
-	
-	data[0] = buffer;
-
-	uint32_t address = 0x0;
-	int arrayIndex = 1;
-	while (read!=NULL){
-		// use the read value from the buffer
-		if (islabel(buffer)){
-			address = 4*address;
-			// truncates the string before : character
-			buffer[strlen(buffer)-2]='\0';
-			insert(buffer,address, symbol_table);
-	
-		} else {
-			address++;
-		}
-		data[++arrayIndex] = buffer;
-		read = fgets(buffer,MAX_LINE_SIZE,fp);
-	}
-	
-	fclose(fp);
-
-	
-
-	// 2nd pass, reading from the string array and passing it into the tokenizer
-	uint32_t calling_address = 0x0;
-	for (int i = 0; i < numlines; i++){
-		if (!islabel(data[i])){
-			printf("%s",data[i]);
-			// call the tokenizer with data[i]
-			TokenizedInstruction *instruct = tokenize(data[i]);
-			// pass the tokenized structure into the various functions
-			call_instruction(instruct,symbol_table,calling_address,address,argv,array_single_data,size_array);
-			calling_address++;
-			free_tokenized_instruction(instruct);
-		}
-	}
-
-	freeArray(data);
-	free_hash_table(symbol_table);
-
-	//After we have proceesed all the instructions, writing the single data transfer instructions at the end of the assembled file
-	binary_writer_array(argv[2],array_single_data,size_array,address);
-
-	free(array_single_data);
-
-	*/
 }
 
 
