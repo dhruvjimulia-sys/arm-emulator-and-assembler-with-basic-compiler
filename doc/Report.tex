@@ -1,15 +1,44 @@
-\documentclass[11pt]{article}
+\documentclass[11pt, letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+
+\setlength{\parskip}{0em}
+\setlength{\partopsep}{0em}
+
 
 \usepackage{fullpage}
 
 \begin{document}
 
-\title{Our Extension...}
-\author{TODO}
+\title{Final Report}
+\author{Dhruv Jimulia, Jake Chong, Nada Struharova, Shruti Pradhan}
+\date{June 2022}
+
 
 \maketitle
 
-\section{Introduction}
+\section{Structure and Implementation of the Assembler}
+Similar to our emulator, we followed a 'divide-and-conquer' strategy in the implementation of our assembler, classifying the tasks we would need to carry out into 4 main areas and splitting it into manageable chunks :
+\begin{itemize}
+    \item The base Assembly Loop: Responsible for all Input/Output operations , carrying out the 2 pass strategy through the source file, passing the decoded non-label instructions into the various assembly functions, and printing the encoded binary onto the destination file.
+    \item The Symbol table: Responsible for storing a key-value mapping of labels and their respective memory addresses
+    \item The Tokenizer: Responsible for breaking an ASCII text instruction into a \verb|struct| called "TokenizedInstruction" , consisting of an \verb|enum| "Opcode" mnemonic and an array of its operands.
+    \item The Assembly Instructions: Arguably the most important, these took in a tokenized instruction as input and generated the respective binary encoding. These were implemented as a separate function for each type of instruction.
+\end{itemize}
+\\ \newline
+
+We decided to follow the 2-pass assembly strategy over the source code, as described in the specification, to build the loader of our assembler. The first pass involved reading the ARM source file line-by-line, identifying the lines which were labels and adding it to our \verb|symbol_table| along with an associated address. ---- description of the hash table ----.
+The second pass involved reading the source file again, breaking all the lines which weren't labels into their primary opcode and operands using the help of our \verb|tokenizer|. Each tokenized instruction was passed into the various assembly encoding instructions on the basis of its enumerated opcode. The generated 32 bit result was written onto the destination file using a \verb|binary_writer|.
+\\ \newline
+
+The implementation of \verb|single data instructions| such as load and store required special care. We maintained an integer array of expressions larger than 0xFF which were identified during binary encoding , and the size of this array was used as a reference to calculate the offset between the PC and the stored expression. After all the instructions of the source file were processed, the expressions of single data transfer instructions were appended separately to the destination file using the \verb|binary_writer_array|.
+\\ \newline
+
+--problems in symbol table / tokenizer --
+
+All the universal type definitions required for our program, such as the struct for our tokenized instructions and the enum for the instruction opcode mnemonics, were stored in a separate file called \verb|assembler_type_definitions.h|
+
+\section{Extension}
 
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
 incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
@@ -18,4 +47,87 @@ Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
 fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
 culpa qui officia deserunt mollit anim id est laborum.
 
+\subsection{Description and Use}
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum.
+
+\subsection{Design and Problems}
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum.
+
+\subsection{Testing}
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum.
+
+\section{Reflection}
+\subsection{Group Reflection}
+For the implementation of the assembler and extension, we unanimously decided to work in pairs as opposed to individually. Thus allowed us to effectively utilize everyone's time and skills as it was much easier to coordinate with 1 other person as opposed to 3, minimizing duplicate code and conflicting ideas. Both pairs frequently asked the other for ideas and updated them on their progress through daily messages, meetings and video calls, ensuring that the group as a whole was on the same page.
+\\ \newline
+Overall, we feel that there was good communication , both within the group and pairs. Everyone felt comfortable to ask the other for help , discuss their ideas, ask the other to change parts of their code for overall code correctness and hygiene or take over some of their tasks if they felt they had a lot on their plate. By frequently discussing strategies and going over others' code , we were able to quickly recognize bugs in our program and become familiar with it as a whole.
+\\ \newline
+Regarding part 1 and part 2, since it was majorly completed by different people, we weren't able to utilize as many of the emulator's functions and definitions in the assembler as we would have liked, since there were different ideas of implementation and structures in the program.
+\\ \newline
+Also, since the 2 pairs worked in relative separation, there were points during the weeks where one pair would be free as they had completed their assigned jobs while the other worked long hours to finish theirs.This lead to a somewhat less effective use of our time , compared to if we didn't constrict ourselves to one portion of the code.
+Since we completed our emulator with relative ease, we may have also underestimated the time required to complete the project, causing us to have to put in long hours of work during the final days leading up to the deadline.
+\\ \newline
+Overall, we felt that we gained a much deeper understanding of C as a language, learning and teaching each other of its various unique features along the way. This was the first of many opportunities we will have to work as a group and we feel that we have gained extensive knowledge in working with other people, getting our ideas across, and resolving disagreements in a professional and effective manner.
+\subsection{Individual Reflections}
+
+\begin{enumerate}
+
+\item Dhruv Jimulia
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum.
+
+\item Jake Chong
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum.
+
+\item Nada Struharova
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum.
+
+\item Shruti Pradhan
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum.
+
+
+\end{enumerate}
+
 \end{document}
+
+
+
+
