@@ -267,7 +267,7 @@ void print_basic(struct Processor *processor, uint32_t *instr) {
 		int i = 1;
 		while (ch != '\0') {
 			printf("%c", ch);
-			char ch = *(processor->memory + location + i);
+			//char ch = *(processor->memory + location + i);
 			i++;
 		}
 	}
@@ -281,15 +281,16 @@ void print_basic(struct Processor *processor, uint32_t *instr) {
 void input_basic(struct Processor *processor, uint32_t *instr) {
 	bool is_string = extract_bit(22, instr);
 	bool reg = extract_bit(21, instr);
+	uint32_t location; 
 	uint32_t start_address = create_mask(0, 20, instr);
 
 	if (is_string) {
-		uint32_t location = reg ? *(processor->registers + start_address) : start_address;
-		scanf("%s", *(processor->memory + start_address));
+		location = reg ? *(processor->registers + start_address) : start_address;
+		scanf("%c", (processor->memory + start_address));
 	}
 	else {
-		uint32_t location = reg ? *(processor->registers + start_address) : *(processor->memory + start_address);
-		scanf("%d", location);
+		location = reg ? *(processor->registers + start_address) : *(processor->memory + start_address);
+		scanf("%u", &location);
 	}
 	printf("\n");
 }
