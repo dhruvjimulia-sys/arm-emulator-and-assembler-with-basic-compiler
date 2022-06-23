@@ -5,7 +5,7 @@
 #include "assembler_type_definitions.h"
 
 //set necessary bits to 1 in a 32bit value
-void set_bits_to(uint32_t *instr, uint32_t input, unsigned int starting_at);
+void set_bits_to(uint32_t *instr, int32_t input, unsigned int starting_at);
 
 //assemble a data processing instruction
 uint32_t assemble_data_processing(TokenizedInstruction *token_instr);
