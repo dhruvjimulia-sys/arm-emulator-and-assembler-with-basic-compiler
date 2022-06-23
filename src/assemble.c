@@ -69,7 +69,7 @@ void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_tabl
 		// if 1st operand is a label , replace it with its reference	
 		uint32_t res = lookup(instruction->operand[0],symbol_table);
 		if (res!=-1){
-			char buffer[33];
+			char buffer[35];
 			sprintf(buffer,"%x",res);
 			strcpy(instruction->operand[0], buffer);
 		}
