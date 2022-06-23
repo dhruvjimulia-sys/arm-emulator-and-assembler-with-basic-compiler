@@ -797,9 +797,19 @@ int store_string_literal_in_memory(char *literal, bool *free_reg_arr, int *asm_n
         // strval <<= 8;
       }
     }
+
+    int mem_address = start_mem + 4 * i;
     *asm_num_lines = *asm_num_lines + 1;
     assembly_file[*asm_num_lines] = malloc(MAX_LINE_LENGTH_ASM);
-    sprintf(assembly_file[*asm_num_lines], "mov r%d,#%d\n", addr_reg, start_mem + 4 * i);
+    sprintf(assembly_file[*asm_num_lines], "mov r%d,#%d\n", addr_reg, (mem_address & 0xff00) >> 8);
+
+    *asm_num_lines = *asm_num_lines + 1;
+    assembly_file[*asm_num_lines] = malloc(MAX_LINE_LENGTH_ASM);
+    sprintf(assembly_file[*asm_num_lines], "lsl r%d,#8\n", addr_reg);
+
+    *asm_num_lines = *asm_num_lines + 1;
+    assembly_file[*asm_num_lines] = malloc(MAX_LINE_LENGTH_ASM);
+    sprintf(assembly_file[*asm_num_lines], "add r%d,r%d,#%d\n", addr_reg, addr_reg, mem_address & 0x00ff);
 
     *asm_num_lines = *asm_num_lines + 1;
     assembly_file[*asm_num_lines] = malloc(MAX_LINE_LENGTH_ASM);
