@@ -226,14 +226,17 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 
 		//set L flag
 		set_bits_to(&assembled_instr, SET_BIT, L_BIT);
-		set_bits_to(&assembled_instr, SET_BIT, U_BIT);
+
 		if ((token_instr->operand[1])[0] == '=') { //address spec of form <=expression>
 			int32_t expression = strtol(token_instr->operand[1] + 1, NULL, 0);
+			set_bits_to(&assembled_instr, SET_BIT, U_BIT);
 			if (expression <= MAX_REPRESENTABLE) { //use mov instruction
 				token_instr->opcode = MOV;
 				assembled_instr = assemble_data_processing(token_instr);
 				return assembled_instr;
 			} else {
+				set_bits_to(&assembled_instr, SET_BIT, U_BIT);
+
 				//add value of expression to end of file
 				eof_expressions[*size_array] = expression;
 				*size_array = *size_array + 1;
@@ -279,10 +282,12 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 	if (token_instr->num_operands == 2) { //pre-indexing
 		//set P flag
                 set_bits_to(&assembled_instr, SET_BIT, P_BIT);
-		if (num_tokens > 1) {	
+		if (num_tokens == 1) {
+			set_bits_to(&assembled_instr, SET_BIT, U_BIT);
+		} else if (num_tokens > 1) {	
 			if (address_tokens[1][0] == 'r') {
 				set_bits_to(&assembled_instr, SET_BIT, I_BIT);
-				set_bits_to(&assembled_instr, SET_BIT, U_BIT);	
+				set_bits_to(&assembled_instr, SET_BIT, U_BIT);
 				if (num_tokens == 4) {
 					encode_shifted_reg(address_tokens[1], address_tokens[2], address_tokens[3], &assembled_instr);
 				} else if(num_tokens == 2) {
@@ -290,7 +295,7 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 				}
 			} else if (address_tokens[1][0] == '#') {
 				//offset_exp = strtol(address_tokens[1] + 1, NULL, 0);
-				if ((address_tokens[1][1] == '-')) {
+				if (address_tokens[1][1] == '-') {
 					offset_exp = strtol(address_tokens[1] + 2, NULL, 0);
 				} else {
 					offset_exp = strtol(address_tokens[1] + 1, NULL, 0);
@@ -301,6 +306,7 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 	} else if (token_instr->num_operands >= 3) { //post-indexing
 		
 		if (token_instr->operand[2][0] == 'r') {
+			set_bits_to(&assembled_instr, SET_BIT, U_BIT);
                         set_bits_to(&assembled_instr, SET_BIT, I_BIT);
 			if (token_instr->num_operands == 5) {
                         	encode_shifted_reg(token_instr->operand[2], token_instr->operand[3], token_instr->operand[4], &assembled_instr);
@@ -308,11 +314,10 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 				encode_shifted_reg(token_instr->operand[2], NULL, NULL, &assembled_instr);
 			}
                 } else if (token_instr->operand[2][0] == '#') {
-                        //offset_exp = strtol(token_instr->operand[2] + 1, NULL, 0);
 			if ((token_instr->operand[2][1] == '-')) {
-				set_bits_to(&assembled_instr, 0x0, U_BIT);
 				offset_exp = strtoul(token_instr->operand[2] + 2, NULL, 0);
 			} else {
+				set_bits_to(&assembled_instr, SET_BIT, U_BIT);
                 		offset_exp = strtoul(token_instr->operand[2] + 1, NULL, 0);
 			}
 		}
@@ -362,13 +367,7 @@ uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address)
 	
 	int32_t offset = 0;
 	//calculate offset (taking effects of ARM pipeline into account)
-	/* if (jump_address >= (pc_address + PIPELINE_EFFECT)) {
-		offset = (jump_address - (pc_address + PIPELINE_EFFECT)) >> 2;
-	} else  {
-		offset = (((pc_address + PIPELINE_EFFECT) - jump_address)) >> 2;
-	}*/
-
-	offset = ((int32_t) jump_address / 4 - (pc_address/4 + (int32_t) PIPELINE_EFFECT/4)) & 0x03ffffff;
+	offset = ((int32_t) jump_address - (pc_address + (int32_t) PIPELINE_EFFECT)) & 0x03ffffff;
 	offset >>= 2;
 	offset &= 0x00ffffff;
 	
