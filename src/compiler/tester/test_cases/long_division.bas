@@ -1,0 +1,9 @@
+LET i=0
+LET x=100
+LET d=6
+WHILE x>=d
+LET x=x-d
+LET i=i+1
+WEND
+PRINT i
+END

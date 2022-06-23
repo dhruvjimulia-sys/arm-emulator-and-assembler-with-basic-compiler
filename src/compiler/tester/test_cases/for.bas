@@ -1,0 +1,4 @@
+FOR X=1 TO 6
+PRINT 2*X
+NEXT X
+END

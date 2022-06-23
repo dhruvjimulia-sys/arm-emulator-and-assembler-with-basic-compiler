@@ -1,0 +1,4 @@
+LET S$="HEL"
+LET L$="H"
+IF S$=L$ THEN LET X=2
+END

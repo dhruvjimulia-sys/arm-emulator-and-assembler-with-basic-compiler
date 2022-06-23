@@ -1,0 +1,30 @@
+#include "symbol_table.h"
+
+extern char ** read_file( char * filename, int * basic_num_lines );
+extern void write_file( char ** file, char * filename, int asm_num_lines );
+extern void free_file( char ** file, int num_lines );
+extern bool file_contains( char ** basic_file, char * string, int basic_num_lines );
+extern bool file_contains_command( char ** basic_file, char * string, int basic_num_lines );
+extern bool file_contains_input_string( char ** basic_file, int basic_num_lines );
+extern int first_free_reg( bool * free_reg_arr );
+extern bool is_val_part_of( char val, char * contains );
+extern bool str_contains_any_of( char * str, char * contains );
+extern bool in_list_of_strings( char * str, char ** list, int num_elems );
+extern int is_substring_of( char * sub, char * str );
+extern char * is_any_substring_of( char ** subs, char * str, int * index );
+extern void init_op_precedence( hash_table * op_precedence );
+extern bool is_string( char * expression );
+extern bool is_string_variable( char * expression );
+extern bool is_string_literal( char * expression );
+extern char * shunting_yard( char * expression, hash_table * op_precedence );
+extern char * eval_arithmetic( char * expression, int * asm_num_lines, char ** assembly_file, hash_table * var_reg_table, bool * free_reg_arr, hash_table * op_precedence );
+extern void eval_conditional( char * cond, int * asm_num_lines, char ** assembly_file, hash_table * var_reg_table, bool * free_reg_arr, int * branch_num, char * basic_command, char ** labels, int num_labels, hash_table * op_precedence );
+extern void replace_on_with_if( char ** basic_file, int basic_num_lines );
+extern void get_binary( uint8_t byte, uint8_t * binary );
+extern char * strip_char_from_string( char * str, char val );
+extern int store_string_literal_in_memory( char * literal, bool * free_reg_arr, int * asm_num_lines, char ** assembly_file, int start_mem );
+extern char ** compile_instructions( char ** basic_file, int basic_num_lines, int * asm_num_lines, int branch_num, char ** labels, int num_labels );
+extern int get_labels( char ** labels, char ** basic_file, int basic_num_lines );
+extern void replace_do_loop_with_if( char ** basic_file, int * basic_num_lines, int * num_generated_labels );
+extern char ** replace_while_wend_with_if( char ** basic_file, int * basic_num_lines, int * num_generated_labels );
+extern char ** replace_for_with_while( char ** basic_file, int * basic_num_lines );

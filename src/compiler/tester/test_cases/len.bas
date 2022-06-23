@@ -1,0 +1,3 @@
+LET S$="HELLO"
+LET X=(LEN(S$)+1)*3
+END
