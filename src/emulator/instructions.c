@@ -279,16 +279,22 @@ void print_basic(struct Processor *processor, uint32_t *instr) {
 void input_basic(struct Processor *processor, uint32_t *instr) {
 	bool is_string = extract_bit(22, instr);
 	bool reg = extract_bit(21, instr);
-	uint32_t location; 
 	uint32_t start_address = create_mask(0, 20, instr);
 
 	if (is_string) {
-		location = reg ? *(processor->registers + start_address) : start_address;
-		scanf("%c", (processor->memory + start_address));
+		if (reg) {
+			uint32_t location = processor->registers[start_address];
+			scanf("%s", &(processor->memory[location]));
+		} else {
+			scanf("%s", &(processor->memory[start_address]));
+		}
 	}
 	else {
-		location = reg ? *(processor->registers + start_address) : *(processor->memory + start_address);
-		scanf("%u", &location);
+		if (reg) {
+			scanf("%u", &(processor->registers[start_address]));
+		} else {
+			scanf("%hhu", &(processor->memory[start_address]));
+		}
 	}
 	printf("\n");
 }
