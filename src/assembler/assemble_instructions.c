@@ -27,7 +27,7 @@
 #define P_BIT 24
 #define U_BIT 23
 #define SHIFT_INT_OR_REG_BIT 4
-/* for additional extension instructions imlemented */
+/* for additional extension instructions implemented */
 #define T_BIT 22
 #define R_BIT 21
 #define SPECIAL_I_BIT 23
@@ -376,12 +376,6 @@ uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address)
 		offset = (- (branch_address - jump_address + PIPELINE_EFFECT) / 4) & 0x00ffffff;
 	}
 	
-	printf("jump address: %x\n", jump_address);
-	printf("pc address: %x\n", pc_address);
-	printf("offset: %x\n", offset);
-	printf("bool: %d\n", jump_address > branch_address);
-	
-	
 	//set offset field with signed 24 bit offset (after being shifted right 2 bits)
 	set_bits_to(&assembled_instr, (uint32_t) offset, OP2_OFFSET_REG);
 
@@ -409,7 +403,7 @@ uint32_t assemble_special(TokenizedInstruction *token_instr) {
 		case PRINTS:
 			set_bits_to(&assembled_instr, SET_BIT, T_BIT);
 		case PRINTN:
-			set_bits_to(&assembled_instr, SET_BIT, SPECIAL_I_BIT);
+			set_bits_to(&assembled_instr, 0x0, SPECIAL_I_BIT);
 			break;
 		case INPUTS:
 			set_bits_to(&assembled_instr, SET_BIT, T_BIT);
