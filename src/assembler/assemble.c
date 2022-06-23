@@ -24,7 +24,7 @@ void binary_writer(char* dest_file, uint32_t result){
 	assert(fp != NULL);
 	fwrite(&result,4,1,fp);
 	if (ferror(fp)){
-		printf("Error in writing to file");
+		printf("Error in writing to file\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -42,7 +42,7 @@ void binary_writer_array(char *dest_file, int32_t *result_array, int size){
 	}
 
 	if (ferror(fp)){
-		printf("Error in writing array elements to file");
+		printf("Error in writing array elements to file\n");
 	}
 	fclose(fp);
 }
@@ -79,7 +79,7 @@ void call_instruction(TokenizedInstruction *instruction, hash_table *symbol_tabl
 		uint32_t result = assemble_special(instruction);
 		binary_writer(dest_file, result);
 	} else {
-		fprintf(stderr, "Incorrect opcode detected");
+		fprintf(stderr, "Incorrect opcode detected\n");
 		exit(EXIT_FAILURE);
 	}
 }
@@ -160,7 +160,7 @@ void load_assembly(char **argv){
 
 int main(int argc, char **argv) {
 	if (argc != 3){
-	       	printf("Incorrect no. of arguments supplied!");
+	       	printf("Incorrect no. of arguments supplied!\n");
 		return EXIT_FAILURE;
 	}
 	load_assembly(argv);
