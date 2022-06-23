@@ -263,11 +263,11 @@ void print_basic(struct Processor *processor, uint32_t *instr) {
 
 	if (is_string) {
 		uint32_t location = reg ? (processor->registers[start_address]) : start_address;
-		char ch = processor->memory[location];
+		char ch = reverse_bits(processor->memory[location], CHAR_BIT);
 		int i = 1;
 		while (ch != '\0') {
 			printf("%c", ch);
-			ch = processor->memory[location + i];
+			ch = reverse_bits(processor->memory[location + i], CHAR_BIT);
 			i++;
 		}
 	}
