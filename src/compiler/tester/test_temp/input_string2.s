@@ -1,3 +1,4 @@
+mov r14,#32644
 inputs r14
 mov r0,r14
 b .INP0

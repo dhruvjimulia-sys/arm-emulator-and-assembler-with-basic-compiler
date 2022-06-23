@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define NUM_TEST_CASES 23
+#define NUM_TEST_CASES 25
 #define TEST_STRING_1 "./compiler test_cases/"
 #define TEST_STRING_2 ".bas test_temp/"
 #define DOT_S ".s"
@@ -16,7 +16,7 @@ static const char TEST_CASES[NUM_TEST_CASES][MAXIMUM_LEN] = {
 	"add01", "add02", "for", "rem",
 	"while01", "while02", "sub01",
 	"sub02", "doloop", "len_literal",
-	"long_division", "remainder",
+	"long_division", "remainder", "rnd",
 	"string_print", "gosub", "len",
 	"guess", "input", "input_string",
 	"input_string2", "on_gosub", "mult",
