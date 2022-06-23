@@ -40,7 +40,7 @@
 #define BRANCH_INSTR 0x5
 #define MULT_ONLY 0x9
 #define SHIFT_INT_OR_REG_BIT 4
-#define PIPELINE_EFFECT 8
+#define PIPELINE_EFFECT 0x8
 #define TRANSFER_INSTR 0x2
 #define MAX_REPRESENTABLE 0xff
 #define MAX_ROTATION 16
@@ -51,7 +51,7 @@
 #define ASR_SHIFT 2
 #define ROR_SHIFT 3
 
-void set_bits_to(uint32_t *instr, uint32_t input, unsigned int starting_at) {
+void set_bits_to(uint32_t *instr, int32_t input, unsigned int starting_at) {
 	*instr |= (input << starting_at);
 }
 
@@ -206,9 +206,8 @@ uint32_t assemble_multiply(TokenizedInstruction *token_instr) {
 
 uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32_t pc_address, uint32_t no_of_instructions, int32_t *eof_expressions, int *size_array) {
 	uint32_t assembled_instr = 0;
-	//static int offset_from_last_address = 1;
-	char *address_tokens[2];
-	int num_tokens = 0;	
+	char *address_tokens[4];
+	unsigned int num_tokens = 0;	
 	
 	//set bits specific to single data transfer
         set_bits_to(&assembled_instr, TRANSFER_INSTR, INSTR_FIELD);
@@ -217,7 +216,7 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
         set_bits_to(&assembled_instr, ALWAYS_COND, COND_FIELD_START_BIT);
 	
 	//set U flag (before trying optional cases with +/-)
-        set_bits_to(&assembled_instr, SET_BIT, U_BIT);
+	//set_bits_to(&assembled_instr, SET_BIT, U_BIT);
 	
 	//set rd bits
         uint32_t rd = strtol(token_instr->operand[0] + 1, NULL, 0);
@@ -227,25 +226,23 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 
 		//set L flag
 		set_bits_to(&assembled_instr, SET_BIT, L_BIT);
-
+		set_bits_to(&assembled_instr, SET_BIT, U_BIT);
 		if ((token_instr->operand[1])[0] == '=') { //address spec of form <=expression>
 			int32_t expression = strtol(token_instr->operand[1] + 1, NULL, 0);
-
 			if (expression <= MAX_REPRESENTABLE) { //use mov instruction
 				token_instr->opcode = MOV;
 				assembled_instr = assemble_data_processing(token_instr);
 				return assembled_instr;
 			} else {
 				//add value of expression to end of file
-				//eof_expressions[offset_from_last_address - 1] = expression;
 				eof_expressions[*size_array] = expression;
 				*size_array = *size_array + 1;
 
 				//set P flag
 				set_bits_to(&assembled_instr, SET_BIT, P_BIT);
+				set_bits_to(&assembled_instr, SET_BIT, P_BIT);
 
 				//calculate offset
-				//uint32_t offset = (no_of_instructions + offset_from_last_address) - (pc_address - 8);
 				uint32_t offset = 0x4 * (no_of_instructions - pc_address + (*size_array-1)) - 0x8;
 				
 				//set rn (base register) to PC
@@ -264,31 +261,61 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
         address_spec[strlen(address_spec) - 1] = '\0';
 
         //parse the address specification
-        char *token = strtok(address_spec, ",");
+        char *token = strtok(address_spec, ", \t");
 
         while (token != NULL) {
                 address_tokens[num_tokens] = token;
-                token = strtok(NULL, ",");
+                token = strtok(NULL, ", \t");
                 num_tokens++;
         }
 
 	//set rn bits
-	uint32_t rn = strtol(++(address_tokens[0]), NULL, 0);
+	uint32_t rn = strtol(address_tokens[0] + 1, NULL, 0);
 	set_bits_to(&assembled_instr, rn, RN_START_BIT);
 	
 	//set offset
-	int32_t offset_exp = 0;
+	uint32_t offset_exp = 0;
 
 	if (token_instr->num_operands == 2) { //pre-indexing
 		//set P flag
                 set_bits_to(&assembled_instr, SET_BIT, P_BIT);
-
-		if (num_tokens == 2) {
-			//offset_exp = parse_expression(address_tokens[1]);
-			offset_exp = strtol(address_tokens[1] + 1, NULL, 0);
+		if (num_tokens > 1) {	
+			if (address_tokens[1][0] == 'r') {
+				set_bits_to(&assembled_instr, SET_BIT, I_BIT);
+				set_bits_to(&assembled_instr, SET_BIT, U_BIT);	
+				if (num_tokens == 4) {
+					encode_shifted_reg(address_tokens[1], address_tokens[2], address_tokens[3], &assembled_instr);
+				} else if(num_tokens == 2) {
+					encode_shifted_reg(address_tokens[1],NULL, NULL, &assembled_instr);
+				}
+			} else if (address_tokens[1][0] == '#') {
+				//offset_exp = strtol(address_tokens[1] + 1, NULL, 0);
+				if ((address_tokens[1][1] == '-')) {
+					offset_exp = strtol(address_tokens[1] + 2, NULL, 0);
+				} else {
+					offset_exp = strtol(address_tokens[1] + 1, NULL, 0);
+					set_bits_to(&assembled_instr, SET_BIT, U_BIT);
+				}
+			}
 		}
-	} else if (token_instr->num_operands == 3) { //post-indexing
-		offset_exp = strtol(token_instr->operand[2]+1, NULL, 0);
+	} else if (token_instr->num_operands >= 3) { //post-indexing
+		
+		if (token_instr->operand[2][0] == 'r') {
+                        set_bits_to(&assembled_instr, SET_BIT, I_BIT);
+			if (token_instr->num_operands == 5) {
+                        	encode_shifted_reg(token_instr->operand[2], token_instr->operand[3], token_instr->operand[4], &assembled_instr);
+			} else if (token_instr->num_operands == 3) {
+				encode_shifted_reg(token_instr->operand[2], NULL, NULL, &assembled_instr);
+			}
+                } else if (token_instr->operand[2][0] == '#') {
+                        //offset_exp = strtol(token_instr->operand[2] + 1, NULL, 0);
+			if ((token_instr->operand[2][1] == '-')) {
+				set_bits_to(&assembled_instr, 0x0, U_BIT);
+				offset_exp = strtoul(token_instr->operand[2] + 2, NULL, 0);
+			} else {
+                		offset_exp = strtoul(token_instr->operand[2] + 1, NULL, 0);
+			}
+		}
 	}
 	
 	if (offset_exp) {
@@ -301,8 +328,7 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address) {
 	uint32_t assembled_instr = 0;
 	uint32_t cond_field;
-	uint32_t jump_address = atoi(token_instr->operand[0]);
-	uint32_t offset;
+	uint32_t jump_address = strtoul(token_instr->operand[0], NULL, 0);
 
 	switch(token_instr->opcode) {
 		case BEQ:
@@ -334,11 +360,20 @@ uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address)
 	//set cond field
 	set_bits_to(&assembled_instr, cond_field, COND_FIELD_START_BIT);
 	
+	int32_t offset = 0;
 	//calculate offset (taking effects of ARM pipeline into account)
-	offset = (jump_address/4 - (pc_address - PIPELINE_EFFECT/4)) >> 2;
+	/* if (jump_address >= (pc_address + PIPELINE_EFFECT)) {
+		offset = (jump_address - (pc_address + PIPELINE_EFFECT)) >> 2;
+	} else  {
+		offset = (((pc_address + PIPELINE_EFFECT) - jump_address)) >> 2;
+	}*/
+
+	offset = ((int32_t) jump_address / 4 - (pc_address/4 + (int32_t) PIPELINE_EFFECT/4)) & 0x03ffffff;
+	offset >>= 2;
+	offset &= 0x00ffffff;
 	
 	//set offset field with signed 24 bit offset (after being shifted right 2 bits)
-	set_bits_to(&assembled_instr, offset, OP2_OFFSET_REG);
+	set_bits_to(&assembled_instr, (uint32_t) offset, OP2_OFFSET_REG);
 
 	//set condition field in assembled instruction
 	set_bits_to(&assembled_instr, cond_field, COND_FIELD_START_BIT);
@@ -390,7 +425,7 @@ uint32_t assemble_special(TokenizedInstruction *token_instr) {
 		
 
 void parse_expression(uint32_t *assembled_instr, char *operand_as_str) {
-	int32_t num_constant = strtol((operand_as_str + 1), NULL, 0);
+	uint32_t num_constant = strtoul((operand_as_str + 1), NULL, 0);
 	
 	if (num_constant > MAX_REPRESENTABLE) {
 		//set operand immediate value with shift to immediate value
@@ -428,6 +463,14 @@ void encode_shifted_reg(char *reg, const char *shift, char *shift_by, uint32_t *
 	uint32_t shift_type = 0;
 	uint32_t shift_val = 0;
 
+	//assign register bits
+        uint32_t reg_to_shift = strtoul(reg + 1, NULL, 0);
+        set_bits_to(assembled_instr, reg_to_shift, OP2_OFFSET_REG);
+	
+	if (shift == NULL || shift_by == NULL) {
+		return;
+	}
+
 	if(!strncmp(shift, "lsl\0", 3)) {
 		shift_type = LSL_SHIFT;
 	} else if (!strncmp(shift, "lsr\0", 3)) {
@@ -442,10 +485,6 @@ void encode_shifted_reg(char *reg, const char *shift, char *shift_by, uint32_t *
 
 	//assign shift type bits
 	set_bits_to(assembled_instr, shift_type, SHIFT_TYPE_BITS);
-
-	//assign register bits
-	uint32_t reg_to_shift = strtoul(reg + 1, NULL, 0);
-	set_bits_to(assembled_instr, reg_to_shift, OP2_OFFSET_REG);
 
 	if (shift_by[0] == '#') {
 		uint32_t shift_int = strtol(shift_by + 1, NULL, 0);
