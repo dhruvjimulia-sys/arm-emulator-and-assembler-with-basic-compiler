@@ -927,9 +927,17 @@ char **compile_instructions(char **basic_file, int basic_num_lines, int *asm_num
           }
         } else {
           char *bracketed_str = shunting_yard(str, op_precedence);
-          char *reg = eval_arithmetic(bracketed_str, asm_num_lines, assembly_file, var_reg_table, free_reg_arr, op_precedence);
-          sprintf(assembly_file[*asm_num_lines], "printn %s\n", reg);
-          free(reg);
+          char *print_expr = eval_arithmetic(bracketed_str, asm_num_lines, assembly_file, var_reg_table, free_reg_arr, op_precedence);
+          if (print_expr[0] == '#') {
+            int free_reg = first_free_reg(free_reg_arr);
+            sprintf(assembly_file[*asm_num_lines], "mov r%d,%s\n", free_reg, print_expr);
+            *asm_num_lines = *asm_num_lines + 1;
+            assembly_file[*asm_num_lines] = malloc(MAX_LINE_LENGTH_ASM);
+            sprintf(assembly_file[*asm_num_lines], "printn r%d\n", free_reg);
+          } else {
+            sprintf(assembly_file[*asm_num_lines], "printn %s\n", print_expr);
+          }
+          free(print_expr);
           free(bracketed_str);
         }
       } else if (EQS(command, "INPUT")) {

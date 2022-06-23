@@ -1,0 +1,4 @@
+LET X=2
+PRINT 3
+PRINT X+3
+END
