@@ -334,7 +334,7 @@ uint32_t assemble_single_data_transfer(TokenizedInstruction *token_instr, uint32
 uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address) {
 	uint32_t assembled_instr = 0;
 	uint32_t cond_field;
-	uint32_t jump_address = strtoul(token_instr->operand[0], NULL, 0);
+	uint32_t jump_address = strtoul(token_instr->operand[0], NULL, 16);
 
 	switch(token_instr->opcode) {
 		case BEQ:
@@ -372,15 +372,15 @@ uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address)
 	uint32_t branch_address = pc_address * 4;
 
 	if (jump_address > branch_address) {
-		offset = (jump_address/4 - (pc_address - PIPELINE_EFFECT/4)) >> 2;
+		offset = (jump_address - branch_address - PIPELINE_EFFECT);
 	} else {
-		offset = ((pc_address - jump_address) * 4) & 0x00ffffff;
+		offset = (- (branch_address - jump_address + PIPELINE_EFFECT) / 4) & 0x00ffffff;
 	}
 	
 	printf("jump address: %x\n", jump_address);
 	printf("pc address: %x\n", pc_address);
 	printf("offset: %x\n", offset);
-	printf("bool: %d\n", jump_address<pc_address);
+	printf("bool: %d\n", jump_address > branch_address);
 	
 	
 	//set offset field with signed 24 bit offset (after being shifted right 2 bits)
