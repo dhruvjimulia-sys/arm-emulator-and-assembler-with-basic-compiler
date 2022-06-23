@@ -3,12 +3,11 @@
 #include <assert.h>
 #include <string.h>
 #include "assemble_instructions.h"
-#include "emulator_utils.h"
 
 /* bit fields start bit */
 #define RD_START_BIT 12
 #define RN_START_BIT 16
-//#define PC_REGISTER 0xf
+#define PC_REGISTER 0xf
 #define OPCODE_START_BIT 21
 #define COND_FIELD_START_BIT 28
 #define MULT_ONLY_START_BIT 4
