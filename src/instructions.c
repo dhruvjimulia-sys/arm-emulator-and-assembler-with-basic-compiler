@@ -267,7 +267,6 @@ void print_basic(struct Processor *processor, uint32_t *instr) {
 		int i = 1;
 		while (ch != '\0') {
 			printf("%c", ch);
-			//char ch = *(processor->memory + location + i);
 			i++;
 		}
 	}
@@ -275,7 +274,6 @@ void print_basic(struct Processor *processor, uint32_t *instr) {
 		uint32_t location = reg ? *(processor->registers + start_address) : *(processor->memory + start_address);
 		printf("%d", location);
 	}
-	printf("\n");
 }
 
 void input_basic(struct Processor *processor, uint32_t *instr) {
