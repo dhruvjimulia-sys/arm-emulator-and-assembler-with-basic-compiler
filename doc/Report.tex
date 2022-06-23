@@ -23,7 +23,7 @@ Similar to our emulator, we followed a 'divide-and-conquer' strategy in the impl
     \item The base Assembly Loop: Responsible for all Input/Output operations , carrying out the 2 pass strategy through the source file, passing the decoded non-label instructions into the various assembly functions, and printing the encoded binary onto the destination file.
     \item The Symbol table: Responsible for storing a key-value mapping of labels and their respective memory addresses
     \item The Tokenizer: Responsible for breaking an ASCII text instruction into a \verb|struct| called "TokenizedInstruction" , consisting of an \verb|enum| "Opcode" mnemonic and an array of its operands.
-    \item The Assembly Instructions: Arguably the most important, these took in a tokenized instruction as input and generated the respective binary encoding. These were implemented as a separate function for each type of instruction.
+    \item The Assembly Instructions: Arguably the most important, these took in a tokenized instruction as input and generated the respective binary encoding. These were implemented in the form of a separate function for each type of instruction.
 \end{itemize}
 \\ \newline
 
@@ -34,7 +34,7 @@ The second pass involved reading the source file again, breaking all the lines w
 The implementation of \verb|single data instructions| such as load and store required special care. We maintained an integer array of expressions larger than 0xFF which were identified during binary encoding , and the size of this array was used as a reference to calculate the offset between the PC and the stored expression. After all the instructions of the source file were processed, the expressions of single data transfer instructions were appended separately to the destination file using the \verb|binary_writer_array|.
 \\ \newline
 
---problems in symbol table / tokenizer --
+-- problems in symbol table / tokenizer / assembly instructions--
 
 All the universal type definitions required for our program, such as the struct for our tokenized instructions and the enum for the instruction opcode mnemonics, were stored in a separate file called \verb|assembler_type_definitions.h|
 
@@ -116,13 +116,7 @@ culpa qui officia deserunt mollit anim id est laborum.
 
 \item Shruti Pradhan
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
-
+Working on this project over the last few weeks has been a challenging, interesting, and rewarding experience. Due to my relative experience in C as compared to other languages, I feel that I struggled initially in grasping the syntax and proper programming style of the language, having to spend significant amount of time watching online tutorials to get the proper intuition to code in C. However, after overcoming initial setbacks, I found the challenge of creatively structuring and designing our program without any initial skeleton to be a truly unique and satisfying opportunity. The freedom to produce the required output in whatever manner we see fit meant that I had to learn how to communicate my ideas properly and be receptive to other opinions, undoubtedly helping me hone my collaborative skills. I believe that I was open-minded in my approach, was ready to recognize my mistakes and frequently change parts of my code if others saw fit. However, one thing that I would definitely like to change in the future is being more confident in my ideas and putting forward my opinions more frequently to the group. Since our group consisted of very talented and vocal people, I feel that I was a more passive member and didn't contribute as much as I would have liked, especially compared to other people. Overall, working as part of this group has taught me how to be more persistent even when encountering frequent mistakes in our program. I was really inspired by their ambition and inventiveness, and would like to inculcate these skills in my work as well. I feel that we all worked in sync and encouraged each other and had a healthy group dynamic, making it an extremely fruitful learning experience.
 
 \end{enumerate}
 
