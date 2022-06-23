@@ -262,11 +262,12 @@ void print_basic(struct Processor *processor, uint32_t *instr) {
 	uint32_t start_address = create_mask(0, 20, instr);
 
 	if (is_string) {
-		uint32_t location = reg ? *(processor->registers + start_address) : start_address;
-		char ch = *(processor->memory + location);
+		uint32_t location = reg ? (processor->registers[start_address]) : start_address;
+		char ch = processor->memory[location];
 		int i = 1;
 		while (ch != '\0') {
 			printf("%c", ch);
+			ch = processor->memory[location + i];
 			i++;
 		}
 	}

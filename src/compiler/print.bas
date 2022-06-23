@@ -1,2 +1,2 @@
-PRINT "H\n"
+PRINT "Hello world\n"
 END
