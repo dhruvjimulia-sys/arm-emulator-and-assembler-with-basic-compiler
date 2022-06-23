@@ -8,8 +8,8 @@ BUILD = assemble emulate
 
 all: $(BUILD)
 
-assemble: assemble.o symbol_table.o tokenizer.o assemble_instructions.o
-assemble.o: assemble.h symbol_table.h tokenizer.h assemble_instructions.h assembler_type_definitions.h
+assemble: assemble.o symbol_table.o tokenizer.o assemble_instructions.o emulator_utils.o
+assemble.o: assemble.h symbol_table.h tokenizer.h assemble_instructions.h assembler_type_definitions.h emulator_utils.h type_definitions.h
 assemble_instructions.o: assemble_instructions.h
 tokenizer.o: tokenizer.h assembler_type_definitions.h
 symbol_table.o: symbol_table.h

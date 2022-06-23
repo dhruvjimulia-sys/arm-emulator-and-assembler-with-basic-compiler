@@ -3,11 +3,12 @@
 #include <assert.h>
 #include <string.h>
 #include "assemble_instructions.h"
+#include "emulator_utils.h"
 
 /* bit fields start bit */
 #define RD_START_BIT 12
 #define RN_START_BIT 16
-#define PC_REGISTER 0xf
+//#define PC_REGISTER 0xf
 #define OPCODE_START_BIT 21
 #define COND_FIELD_START_BIT 28
 #define MULT_ONLY_START_BIT 4
@@ -335,7 +336,18 @@ uint32_t assemble_branch(TokenizedInstruction *token_instr, uint32_t pc_address)
 	set_bits_to(&assembled_instr, cond_field, COND_FIELD_START_BIT);
 	
 	//calculate offset (taking effects of ARM pipeline into account)
-	offset = (jump_address/4 - (pc_address - PIPELINE_EFFECT/4)) >> 2;
+	uint32_t branch_address = pc_address * 4;
+
+	if (jump_address > branch_address) {
+		offset = (jump_address/4 - (pc_address - PIPELINE_EFFECT/4)) >> 2;
+	} else {
+		offset = ((pc_address - jump_address) * 4) & 0x00ffffff;
+	}
+	
+	printf("jump address: %x\n", jump_address);
+	printf("pc address: %x\n", pc_address);
+	printf("offset: %x\n", offset);
+	printf("bool: %d\n", jump_address<pc_address);
 	
 	//set offset field with signed 24 bit offset (after being shifted right 2 bits)
 	set_bits_to(&assembled_instr, offset, OP2_OFFSET_REG);
