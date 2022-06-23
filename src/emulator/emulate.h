@@ -15,6 +15,6 @@ void load(char filename[], struct Processor* processor);
 bool process_instructions(uint8_t* instruction_bytes, struct Processor* processor);
 
 //defines base code of the emulator loop
-void emulator_loop(struct Processor* processor);
+void emulator_loop(struct Processor* processor, bool suppress);
 
 #endif

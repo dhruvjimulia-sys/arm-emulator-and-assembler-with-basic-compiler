@@ -49,7 +49,7 @@ bool process_instructions(uint8_t* instruction_bytes, struct Processor* processo
 }
 
 
-void emulator_loop(struct Processor* processor) {
+void emulator_loop(struct Processor* processor, bool suppress) {
 	uint8_t* instructions = processor->memory;
 	uint8_t fetched[BYTES_PER_INSTRUCTION];
 	uint8_t decoded[BYTES_PER_INSTRUCTION];
@@ -88,43 +88,55 @@ void emulator_loop(struct Processor* processor) {
 		processor->registers[PC_REGISTER] += BYTES_PER_INSTRUCTION;
 	}
 
-	/* Print processor status */
-	printf("Registers:\n");
-	for (int j = 0; j < REGISTERS; j++) {
-		if (j != SP_REGISTER && j != LR_REGISTER) {
-			if (j == PC_REGISTER) {
-				printf("PC  ");
-			} else if (j == CPSR_REGISTER) {
-				printf("CPSR");
-			} else {
-				printf("$%-3d", j);
+	if (!suppress) {
+		/* Print processor status */
+		printf("Registers:\n");
+		for (int j = 0; j < REGISTERS; j++) {
+			if (j != SP_REGISTER && j != LR_REGISTER) {
+				if (j == PC_REGISTER) {
+					printf("PC  ");
+				} else if (j == CPSR_REGISTER) {
+					printf("CPSR");
+				} else {
+					printf("$%-3d", j);
+				}
+				printf(": %10d (0x%08x)\n", processor->registers[j], processor->registers[j]);
 			}
-			printf(": %10d (0x%08x)\n", processor->registers[j], processor->registers[j]);
 		}
-	}
-	printf("Non-zero memory:\n");
-	for (uint32_t i = 0; i < MEM_SIZE; i += 4) {
-		if (!is_all_zero(processor->memory + i, BYTES_PER_INSTRUCTION)) {
-			printf("0x%08x: 0x", i);
-			for (uint32_t j = 0; j < 4; j++) {
-				printf("%02x", reverse_bits(processor->memory[change_endianness(i + j, 0)], CHAR_BIT));
+		printf("Non-zero memory:\n");
+		for (uint32_t i = 0; i < MEM_SIZE; i += 4) {
+			if (!is_all_zero(processor->memory + i, BYTES_PER_INSTRUCTION)) {
+				printf("0x%08x: 0x", i);
+				for (uint32_t j = 0; j < 4; j++) {
+					printf("%02x", reverse_bits(processor->memory[change_endianness(i + j, 0)], CHAR_BIT));
+				}
+				printf("\n");
 			}
-			printf("\n");
 		}
 	}
 }
 
 int main(int argc, char **argv) {
 	struct Processor processor = {{0}, {0}};
+	bool suppress = false;
 	if (argc != 2) {
-		if (argc > 2) {
+		if (argc == 3) {
+			if (!strcmp(argv[2], "-s")) {
+				suppress = true;
+			} else {
+				printf("Invalid third argument\n");
+				return EXIT_FAILURE;
+			}
+		} else if (argc > 3) {
 			printf("Too many arguments supplied\n");
+			return EXIT_FAILURE;
 		} else {
 			printf("No arguments\n");
+			return EXIT_FAILURE;
 		}
-		return EXIT_FAILURE;
+		
 	}
 	load(argv[1], &processor);
-	emulator_loop(&processor);
+	emulator_loop(&processor, suppress);
 	return EXIT_SUCCESS;
 }
