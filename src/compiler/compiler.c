@@ -757,6 +757,8 @@ int store_string_literal_in_memory(char *literal, bool *free_reg_arr, int *asm_n
   free(str_without_esc);
   
   int reg = first_free_reg(free_reg_arr);
+  free_reg_arr[reg] = false;
+  int addr_reg = first_free_reg(free_reg_arr);
   int h = 0;
   for (int i = 0; i < num_ins; i++) {
     // uint32_t strval = 0;
@@ -797,8 +799,13 @@ int store_string_literal_in_memory(char *literal, bool *free_reg_arr, int *asm_n
     }
     *asm_num_lines = *asm_num_lines + 1;
     assembly_file[*asm_num_lines] = malloc(MAX_LINE_LENGTH_ASM);
-    sprintf(assembly_file[*asm_num_lines], "str r%d,=0x%x\n", reg, start_mem + 4 * i);
+    sprintf(assembly_file[*asm_num_lines], "mov r%d,#%d\n", addr_reg, start_mem + 4 * i);
+
+    *asm_num_lines = *asm_num_lines + 1;
+    assembly_file[*asm_num_lines] = malloc(MAX_LINE_LENGTH_ASM);
+    sprintf(assembly_file[*asm_num_lines], "str r%d,[r%d]\n", reg, addr_reg);
   }
+  free_reg_arr[reg] = true;
   return num_ins;
 }
 

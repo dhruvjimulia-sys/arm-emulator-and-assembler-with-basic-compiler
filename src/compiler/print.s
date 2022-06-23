@@ -6,7 +6,8 @@ lsl r0,#8
 add r0,r0,#108
 lsl r0,#8
 add r0,r0,#108
-str r0,=0xff08
+mov r1,#65288
+str r0,[r1]
 mov r0,#0
 add r0,r0,#111
 lsl r0,#8
@@ -15,7 +16,8 @@ lsl r0,#8
 add r0,r0,#119
 lsl r0,#8
 add r0,r0,#111
-str r0,=0xff0c
+mov r1,#65292
+str r0,[r1]
 mov r0,#0
 add r0,r0,#114
 lsl r0,#8
@@ -24,11 +26,13 @@ lsl r0,#8
 add r0,r0,#100
 lsl r0,#8
 add r0,r0,#10
-str r0,=0xff10
+mov r1,#65296
+str r0,[r1]
 mov r0,#0
 lsl r0,#8
 lsl r0,#8
 lsl r0,#8
-str r0,=0xff14
+mov r1,#65300
+str r0,[r1]
 prints #65288
 andeq r0,r0,r0
