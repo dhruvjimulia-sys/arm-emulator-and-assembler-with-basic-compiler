@@ -759,28 +759,42 @@ int store_string_literal_in_memory(char *literal, bool *free_reg_arr, int *asm_n
   int reg = first_free_reg(free_reg_arr);
   int h = 0;
   for (int i = 0; i < num_ins; i++) {
-    uint32_t strval = 0;
-    for (int j = 0; j < 4; j++) {
-      if (i * 4 + h + j + 1 < strlen(literal)) {
-        if (literal[i * 4 + h + j + 1] == '\\') {
-          if (literal[i * 4 + h + j + 2] == 'n') {
-            strval += '\n';
-            h++;
-          }
-        } else {
-          strval += literal[i * 4 + h + j + 1];
-        }
-      }
-      if (j != 3) {
-        strval <<= 8;
-      }
-    }
+    // uint32_t strval = 0;
     if (i != 0) {
       *asm_num_lines = *asm_num_lines + 1;
       assembly_file[*asm_num_lines] = malloc(MAX_LINE_LENGTH_ASM);
     }
-    sprintf(assembly_file[*asm_num_lines], "mov r%d,#%u\n", reg, strval);
+    sprintf(assembly_file[*asm_num_lines], "mov r%d,#0\n", reg);
 
+    for (int j = 0; j < 4; j++) {
+      if (i * 4 + h + j + 1 < strlen(literal)) {
+        *asm_num_lines = *asm_num_lines + 1;
+        assembly_file[*asm_num_lines] = malloc(MAX_LINE_LENGTH_ASM);
+
+        if (literal[i * 4 + h + j + 1] == '\\') {
+          if (literal[i * 4 + h + j + 2] == 'n') {
+            // strval += '\n';
+            h++;
+            sprintf(assembly_file[*asm_num_lines], "add r%d,r%d,#%d\n", reg, reg, '\n');
+          } else if (literal[i * 4 + h + j + 2] == '\\') {
+            h++;
+            sprintf(assembly_file[*asm_num_lines], "add r%d,r%d,#%d\n", reg, reg, '\\');
+          } else {
+            fprintf(stderr, "Compiler error: string escape character parsing error\n");
+            exit(EXIT_FAILURE);
+          }
+        } else { 
+          // strval += literal[i * 4 + h + j + 1];
+          sprintf(assembly_file[*asm_num_lines], "add r%d,r%d,#%d\n", reg, reg, literal[i * 4 + h + j + 1]);
+        }
+      }
+      if (j != 3) {
+        *asm_num_lines = *asm_num_lines + 1;
+        assembly_file[*asm_num_lines] = malloc(MAX_NUM_LINES_ASM);
+        sprintf(assembly_file[*asm_num_lines], "lsl r%d,#8\n", reg);
+        // strval <<= 8;
+      }
+    }
     *asm_num_lines = *asm_num_lines + 1;
     assembly_file[*asm_num_lines] = malloc(MAX_LINE_LENGTH_ASM);
     sprintf(assembly_file[*asm_num_lines], "str r%d,=0x%x\n", reg, start_mem + 4 * i);
@@ -892,10 +906,10 @@ char **compile_instructions(char **basic_file, int basic_num_lines, int *asm_num
           free(final_exp);
           free(expression);
         } else {
-          int string_mem_index_diff = store_string_literal_in_memory(strtok(expression, "\n"), free_reg_arr, asm_num_lines, assembly_file, STRING_START_MEM + string_mem_index);
+          int string_mem_index_diff = store_string_literal_in_memory(strtok(expression, "\n"), free_reg_arr, asm_num_lines, assembly_file, VAR_STRING_START_MEM + string_mem_index);
           *asm_num_lines = *asm_num_lines + 1;
           assembly_file[*asm_num_lines] = malloc(MAX_LINE_LENGTH_ASM);
-          sprintf(assembly_file[*asm_num_lines], "ldr r%d,=0x%x\n", reg, STRING_START_MEM + string_mem_index);
+          sprintf(assembly_file[*asm_num_lines], "ldr r%d,=0x%x\n", reg, VAR_STRING_START_MEM + string_mem_index);
           string_mem_index += string_mem_index_diff * 4;
         }
       } else if (EQS(command, "IF")) {

@@ -1,0 +1,3 @@
+LET X$="HELLO"
+LET Y$="WOR"
+END

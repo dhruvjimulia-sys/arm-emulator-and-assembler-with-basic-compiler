@@ -1,0 +1,9 @@
+mov r0,#0
+add r0,r0,#72
+lsl r0,#8
+add r0,r0,#10
+lsl r0,#8
+lsl r0,#8
+str r0,=0xff08
+prints #65288
+andeq r0,r0,r0
