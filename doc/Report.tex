@@ -40,12 +40,25 @@ All the universal type definitions required for our program, such as the struct 
 
 \section{Extension}
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+For the extension we built a compiler for a subset of the BBC BASIC language, which compiles to the ARM instructions taken by the assembler. This allows BASIC programs to be run on the ARM emulator created as part of the C project. We implemented the following BASIC commands for our compiler:
+\begin{itemize}
+\item GOTO
+\item GOSUB-RETURN
+\item ON-GOSUB
+\item LET
+\item LEN
+\item DO-LOOP
+\item FOR-NEXT
+\item RND
+\item IF-THEN
+\item WHILE-WEND
+\item PRINT 
+\item REM
+\item INPUT 
+\end{itemize}
+
+We used Dijkstra's shunting yard algorithm which we learned in the Java spreadsheet PPT in order to ensure the correct order of operations for arithmetic expressions. We stored strings and performed string manipulation by accessing the memory of the emulator. We also added print and input instructions to the assembler and emulator in order to support I/O in BASIC. We wrote a tester in C to test the compiler's capabilities. We believe the tester is effective as the test cases contain all of the instructions that we have implemented and we have successfully used the tester to help debug the compiler. We also wrote a BASIC version of rock paper scissors that runs on the emulated ARM machine as a demonstration of the compiler's use.
+The biggest challenge was managing the memory of the ARM emulator, especially when storing and loading strings. The LEN and RND functions were particularly difficult to parse and integrate with arithmetic expressions. Pseudorandom number generation was difficult to conceptualise but once we had a suitable algorithm, we could implement it in assembly with relative ease.
 
 \subsection{Description and Use}
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
@@ -98,12 +111,7 @@ culpa qui officia deserunt mollit anim id est laborum.
 
 \item Jake Chong
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+I found working on this project to be very enjoyable. I worked mostly on the emulator and extension. I have done very little in C before although I found it quite easy to pick up, and working with other people helped a lot in this regard. I feel that my understanding of the imperative programming style has improved greatly while working on this project. Although we faced a few challenges, especially in the extension, solving them was very rewarding and the experience has improved my understanding of C and of ARM systems.  
 
 \item Nada Struharova
 
@@ -116,7 +124,7 @@ culpa qui officia deserunt mollit anim id est laborum.
 
 \item Shruti Pradhan
 
-Working on this project over the last few weeks has been a challenging, interesting, and rewarding experience. Due to my relative experience in C as compared to other languages, I feel that I struggled initially in grasping the syntax and proper programming style of the language, having to spend significant amount of time watching online tutorials to get the proper intuition to code in C. However, after overcoming initial setbacks, I found the challenge of creatively structuring and designing our program without any initial skeleton to be a truly unique and satisfying opportunity. The freedom to produce the required output in whatever manner we see fit meant that I had to learn how to communicate my ideas properly and be receptive to other opinions, undoubtedly helping me hone my collaborative skills. I believe that I was open-minded in my approach, was ready to recognize my mistakes and frequently change parts of my code if others saw fit. However, one thing that I would definitely like to change in the future is being more confident in my ideas and putting forward my opinions more frequently to the group. Since our group consisted of very talented and vocal people, I feel that I was a more passive member and didn't contribute as much as I would have liked, especially compared to other people. Overall, working as part of this group has taught me how to be more persistent even when encountering frequent mistakes in our program. I was really inspired by their ambition and inventiveness, and would like to inculcate these skills in my work as well. I feel that we all worked in sync and encouraged each other and had a healthy group dynamic, making it an extremely fruitful learning experience.
+Working on this project over the last few weeks has been a challenging, interesting, and rewarding experience. Due to my relative lack of experience in C as compared to other languages, I feel that I struggled initially in grasping the syntax and proper programming style of the language, having to spend significant amount of time watching online tutorials to get the proper intuition to code in C. However, after overcoming initial setbacks, I found the challenge of creatively structuring and designing our program without any initial skeleton to be a truly unique and satisfying opportunity. The freedom to produce the required output in whatever manner we see fit meant that I had to learn how to communicate my ideas properly and be receptive to other opinions, undoubtedly helping me hone my collaborative skills. I believe that I was open-minded in my approach, was ready to recognize my mistakes and frequently change parts of my code if others saw fit. However, one thing that I would definitely like to change in the future is being more confident in my ideas and putting forward my opinions more frequently to the group. Since our group consisted of very talented and vocal people, I feel that I was a more passive member and didn't contribute as much as I would have liked, especially compared to other people. Overall, working as part of this group has taught me how to be more persistent even when encountering frequent mistakes in our program. I was really inspired by their ambition and inventiveness, and would like to inculcate these skills in my work as well. I feel that we all worked in sync and encouraged each other and had a healthy group dynamic, making it an extremely fruitful learning experience.
 
 \end{enumerate}
 
