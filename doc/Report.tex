@@ -92,7 +92,7 @@ Where:
 \item R is 0 when ADDRESS represents an immediate memory address and 1 when ADDRESS represents a register.
 \end{itemize}
 
-We wrote functions to evaluate conditional and arithmetic expressions, and to store strings usefully in memory. We wrote a tester in C to test the compiler's capabilities. We believe the tester is effective as the test cases contain all of the instructions that we have implemented and we have successfully used the tester to help debug the compiler. We also wrote a BASIC version of rock paper scissors that runs on the emulated ARM machine as a demonstration of the compiler's use.
+We wrote functions to evaluate conditional and arithmetic expressions, and to store strings usefully in memory. We wrote a tester in C to test the compiler's capabilities. We believe the tester is effective as the test cases contain all of the instructions that we have implemented and we have successfully used the tester to help debug the compiler. We tested various programs through the entire compiler/assembler/emulator pipeline as a demonstration of the compiler's use.
 The biggest challenge was managing the memory of the ARM emulator, especially when storing and loading strings. The LEN and RND functions were particularly difficult to parse and integrate with arithmetic expressions. Pseudorandom number generation was difficult to conceptualise but once we had a suitable algorithm, we could implement it in assembly with relative ease.
 
 \subsection{Description and Use}
