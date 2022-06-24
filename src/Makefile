@@ -9,10 +9,11 @@ BUILD = assemble emulate compiler
 all: $(BUILD)
 
 emulate:
-	cd emulator; make clean all; cd ..
+	cd emulator; make clean all; cd ..; cp emulator/emulate .
 assemble:
-	cd assembler; make clean all; cd ..
+	cd assembler; make clean all; cd ..; cp assembler/assemble .
 compiler:
-	cd compile; make clean all; cd ..
+	cd compile; make clean all; cd ..; cp compile/compiler .
 clean:
+	rm $(BUILD)
 	cd emulator; make clean; cd ../assembler; make clean; cd ../compile; make clean; cd ..
