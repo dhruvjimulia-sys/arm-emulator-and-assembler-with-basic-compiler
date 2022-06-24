@@ -1,0 +1,8 @@
+PRINT "1 or 2?"
+INPUT d
+IF d=1 THEN GOSUB one
+PRINT 2
+one:
+PRINT 1
+RETURN
+END

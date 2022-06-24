@@ -1,0 +1,4 @@
+LET x=5
+LET y=6
+PRINT x+y
+END

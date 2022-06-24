@@ -1,30 +1,40 @@
-\documentclass[11pt]{article}
+\documentclass[12pt, letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
 
-\usepackage{fullpage}
+\setlength{\parskip}{0em}
+\setlength{\partopsep}{0em}
+
+\title{Interim Checkpoint Report}
+\author{Shruti Pradhan, Nada Struharova, Dhruv Jimulia, Jake Chong }
+\date{June 2022}
 
 \begin{document}
-
-\title{ARM Checkpoint... }
-\author{TODO}
 
 \maketitle
 
 \section{Group Organisation}
+To start off, we needed to create an even work distribution and a clear project plan. Therefore before starting on the implementation of the emulator, we split Part I into the following sections:
+\begin{itemize}
+  \item Emulator loop (base of the emulator).
+  \item The fetch-decode-execute cycle.
+  \begin{itemize}
+      \item Fetch instructions from memory.
+      \item Decode instructions.
+  \end{itemize}
+  \item Execution of different types of instructions.
+\end{itemize}
+The rather modular split allowed for easy collaboration among the group and also reduced the amount of duplicate code and merge conflicts. Once the individual sections were finished, we started integrating our resulting modules into a working version of the emulator. The test suite provided assisted with the debugging and some finishing touches. We are approaching the assembler (Part II) in a similar way.
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+Furthermore, the work and involvement of all group members were mainly managed with regular meetings as well as maintaining a group chat for updates on work progress.
 
-\section{Implementation Strategies}
+\section{Structure and Implementation}
+For Part I, the state of the emulated processor was modelled as a \verb|struct|, which was used to access values held in registers and memory. This \verb|struct| along with some other enumerations used for decoding instructions are defined inside the \verb|type_definitions| file. We also created a \verb|emulator_utils| module containing all the utility functions, such as sign extension or setting specific individual condition flags, and allows for them to be used in various source files. The \verb|emulator_utils| file also contains many functions which could prove useful in Part II: The Assembler. As mentioned earlier, the emulator task was split into three parts. The base code for the emulator loop and fetch-decode-execute cycle was written inside the \verb|emulate| file. The file additionally imports \verb|instructions.c| which deals with the execution of each type of instruction that can be passed to the emulator.
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+Thanks to the detailed specification provided, the implementation of Part I was fairly smooth, with only minor bugs found later in the code. One notably challenging part was creating the memory layout as each word in ARM binary files is stored in a \textit{little-endian} order. Our memory reading method failed at first and had to be reconstructed. In the end, the correct order was achieved by reading each word and subsequently reversing it. This approach made storing to and loading from memory work correctly, hence making our implementation of the emulator pass the tests provided.
 
+\section{Reflection}
+Seeing as this was our first group project involving programming, we encountered some problems with the version control and the general aspects of C language. Fortunately, we picked up the basics of \verb|Gitlab| fairly quickly and started using its features to structure our work. For example, we all created our own branch to start implementing emulator subsections. Additionally, there was a universal development branch into which we frequently merged our branches, without the risk of losing the working version on the master (main) branch of the project. It is worth pointing out that for future projects, whether it be group or individual, there are many features of Git we have yet to explore. 
+
+Regarding the work management and overall group communication, so far there was no problem with setting up meetings or deciding on how the work would be split. The group is highly flexible, each member is open to compromise and more than happy to help others with more challenging tasks. Continuing on with the assembler, we might try pairing up for different subsections as opposed to working on them individually. This could help us solve problems we encounter with C language faster and likewise reduce the time taken to discuss various ideas for implementation.
 \end{document}

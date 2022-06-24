@@ -1,0 +1,2 @@
+LET X=LEN("HELLO");
+END

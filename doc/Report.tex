@@ -1,21 +1,90 @@
-\documentclass[11pt]{article}
+\documentclass[11pt, letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+
+\setlength{\parskip}{0em}
+\setlength{\partopsep}{0em}
+
 
 \usepackage{fullpage}
 
 \begin{document}
 
-\title{Our Extension...}
-\author{TODO}
+\title{Final Report}
+\author{Dhruv Jimulia, Jake Chong, Nada Struharova, Shruti Pradhan}
+\date{June 2022}
+
 
 \maketitle
 
-\section{Introduction}
+\section{Structure and Implementation of the Assembler}
+Similar to our emulator, we followed a 'divide-and-conquer' strategy in the implementation of our assembler, classifying the tasks we would need to carry out into 4 main areas and splitting it into manageable chunks :
+\begin{itemize}
+    \item The base Assembly Loop: Responsible for all Input/Output operations , carrying out the 2 pass strategy through the source file, passing the decoded non-label instructions into the various assembly functions, and printing the encoded binary onto the destination file.
+    \item The Symbol table: Responsible for storing a key-value mapping of labels and their respective memory addresses
+    \item The Tokenizer: Responsible for breaking an ASCII text instruction into a \verb|struct| called "TokenizedInstruction" , consisting of an \verb|enum| "Opcode" mnemonic and an array of its operands.
+    \item The Assembly Instructions: Arguably the most important, these took in a tokenized instruction as input and generated the respective binary encoding. These were implemented in the form of a separate function for each type of instruction.
+\end{itemize}
+\\ \newline
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+We decided to follow the 2-pass assembly strategy over the source code, as described in the specification, to build the loader of our assembler. The first pass involved reading the ARM source file line-by-line, identifying the lines which were labels and adding it to our \verb|symbol_table| along with an associated address. ---- description of the hash table ----.
+The second pass involved reading the source file again, breaking all the lines which weren't labels into their primary opcode and operands using the help of our \verb|tokenizer|. Each tokenized instruction was passed into the various assembly encoding instructions on the basis of its enumerated opcode. The generated 32 bit result was written onto the destination file using a \verb|binary_writer|.
+\\ \newline
+
+The implementation of \verb|single data instructions| such as load and store required special care. We maintained an integer array of expressions larger than 0xFF which were identified during binary encoding , and the size of this array was used as a reference to calculate the offset between the PC and the stored expression. After all the instructions of the source file were processed, the expressions of single data transfer instructions were appended separately to the destination file using the \verb|binary_writer_array|.
+\\ \newline
+
+We chose to implement the abstract data type for the symbol table as a hash table with chaining collision method. The challenging part of creating this structure was dynamic memory allocation. Because of choosing a chaining collision method, each entry in the table also worked as a linked list to create an entry bucket. Although allocating memory on the heap for a linked list as well as a 2-dimensional array for the hash table was a challenge, studying some structure implementations in C and having a dummy main procedure to test our code, we were able to perfect the hash table and use it in our extension as well.
+\\ \newline
+
+In addition, we faced a few problems with the tokeniser, where we had to decide to what extent we would be parsing the instructions before calling functions to assemble them into binary. We agreed we would simply split the instruction into its opcode mnemonic and operands for the simplicity of tokeniser and further examine the operands in the assemble functions.
+We found \verb|strtok| to be quite unintuitive as we are used to tokenising in other languages such as Python. However, after thoroughly reading through the documentation for \verb|strtok|, we managed to implement the tokeniser successfully.
+\\ \newline
+
+All the universal type definitions required for our program, such as the struct for our tokenized instructions and the enum for the instruction opcode mnemonics, were stored in a separate file called \verb|assembler_type_definitions.h|
+
+\section{Extension}
+
+For the extension we built a compiler for a subset of the BBC BASIC language, which compiles to the ARM instructions taken by the assembler. This allows BASIC programs to be run on the ARM emulator created as part of the C project. We implemented the following BASIC commands for our compiler: GOTO, GOSUB-RETURN, ON-GOSUB, LET, LEN, DO-LOOP, FOR-NEXT, RND, IF-THEN, WHILE-WEND, PRINT, REM, INPUT.
+We used Dijkstra's shunting yard algorithm which we learned in the Java spreadsheet PPT in order to ensure the correct order of operations for arithmetic expressions. We stored strings and performed string manipulation by accessing the memory of the emulator. We also added print and input instructions to the assembler and emulator in order to support I/O in BASIC.
+We wrote functions to evaluate conditional and arithmetic expressions, and to store strings usefully in memory. We wrote a tester in C to test the compiler's capabilities. We believe the tester is effective as the test cases contain all of the instructions that we have implemented and we have successfully used the tester to help debug the compiler. We tested various programs through the entire compiler/assembler/emulator pipeline as a demonstration of the compiler's use.
+The biggest challenge was managing the memory of the ARM emulator, especially when storing and loading strings. The LEN and RND functions were particularly difficult to parse and integrate with arithmetic expressions. Pseudorandom number generation was difficult to conceptualise but once we had a suitable algorithm, we could implement it in assembly with relative ease.
+
+\section{Reflection}
+\subsection{Group Reflection}
+For the implementation of the assembler and extension, we unanimously decided to work in pairs as opposed to individually. Thus allowed us to effectively utilize everyone's time and skills as it was much easier to coordinate with 1 other person as opposed to 3, minimizing duplicate code and conflicting ideas. Both pairs frequently asked the other for ideas and updated them on their progress through daily messages, meetings and video calls, ensuring that the group as a whole was on the same page.
+\\ \newline
+Overall, we feel that there was good communication , both within the group and pairs. Everyone felt comfortable to ask the other for help , discuss their ideas, ask the other to change parts of their code for overall code correctness and hygiene or take over some of their tasks if they felt they had a lot on their plate. By frequently discussing strategies and going over others' code , we were able to quickly recognize bugs in our program and become familiar with it as a whole.
+\\ \newline
+Regarding part 1 and part 2, since it was majorly completed by different people, we weren't able to utilize as many of the emulator's functions and definitions in the assembler as we would have liked, since there were different ideas of implementation and structures in the program.
+\\ \newline
+Also, since the 2 pairs worked in relative separation, there were points during the weeks where one pair would be free as they had completed their assigned jobs while the other worked long hours to finish theirs.This lead to a somewhat less effective use of our time , compared to if we didn't constrict ourselves to one portion of the code.
+Since we completed our emulator with relative ease, we may have also underestimated the time required to complete the project, causing us to have to put in long hours of work during the final days leading up to the deadline.
+\\ \newline
+Overall, we have gained a much deeper understanding of C as a language, learning and teaching each other of its various unique features along the way. This was the first of many opportunities we will have to work as a group and we feel that we have gained extensive knowledge in working with other people, getting our ideas across, and resolving disagreements in a professional and effective manner.
+\subsection{Individual Reflections}
+
+\begin{enumerate}
+
+\item Dhruv Jimulia
+
+Overall, I found working on this project to be a fulfilling and enlightening exprerience. Emulating an ARM processor has not only improved my knowledge about C, but it has also strengthened my understanding of computer systems. Furthermore, creating the BASIC compiler as part of the extension was a great opportunity for me to learn about how compilers work. I also feel that after completing this project, I have become a better team worker and communicator. In particular, this project helped me understand the importance of version control systems in collaborative software development. However, if there is something that I think I should have done differently in this project then it would be to plan out and organize my time better so I do not have much work left just before the deadline. Nevertherless, the project was still an excellent learning exprerience and I'm sure I will be able to use the skills I acquired from this project in the future.
+
+\item Jake Chong
+
+I found working on this project to be very enjoyable. I worked mostly on the emulator and extension. I have done very little in C before although I found it quite easy to pick up, and working with other people helped a lot in this regard. I feel that my understanding of the imperative programming style has improved greatly while working on this project. Although we faced a few challenges, especially in the extension, solving them was very rewarding and the experience has improved my understanding of C and of ARM systems.  
+
+\item Nada Struharova
+
+Lacking experience with programming in C language, the first few weeks into the project were a bit challenging. However, as the primary focus in lectures and labs was to deepen our knowledge of low-level programming and to learn the skills needed for creating efficient code in C, I had taken up the basics fast enough to be able to enjoy the exploration of a new language through project work. I am still not entirely comfortable with some concepts in C, such as file reading, as these tasks were allocated to different group members for both parts of this project.
+Working in a group was a new experience for me, but I would say we handled it well. Everyone was very communicative, hard-working and flexible. We struggled a little bit with version control and the overall structure of the project as well as the individual work. As we started on the project fairly soon to leave a sufficient amount of time for the extension and testing, we were able to work out group issues promptly. While working on Part I, everyone picked up the basics of Git and we agreed on how to proceed with the project. 
+Having written most of the code for simulated execution of instructions in emulator, I ended up working on encoding the instructions in assembler as well. These tasks were easy to split into multiple functions to build upon and they both helped me learn how to structure my code and gain a deeper understanding of imperative programming.
+
+\item Shruti Pradhan
+
+Working on this project over the last few weeks has been a challenging, interesting, and rewarding experience. Due to my relative lack of experience in C as compared to other languages, I feel that I struggled initially in grasping the syntax and proper programming style of the language, having to spend significant amount of time watching online tutorials to get the proper intuition to code in C. However, after overcoming initial setbacks, I found the challenge of creatively structuring and designing our program without any initial skeleton to be a truly unique and satisfying opportunity. The freedom to produce the required output in whatever manner we see fit meant that I had to learn how to communicate my ideas properly and be receptive to other opinions, undoubtedly helping me hone my collaborative skills. I believe that I was open-minded in my approach, was ready to recognize my mistakes and frequently change parts of my code if others saw fit. However, one thing that I would definitely like to change in the future is being more confident in my ideas and putting forward my opinions more frequently to the group. Since our group consisted of very talented and vocal people, I feel that I was a more passive member and didn't contribute as much as I would have liked, especially compared to other people. Overall, working as part of this group has taught me how to be more persistent even when encountering frequent mistakes in our program. I was really inspired by their ambition and inventiveness, and would like to inculcate these skills in my work as well. I feel that we all worked in sync and encouraged each other and had a healthy group dynamic, making it an extremely fruitful learning experience.
+
+\end{enumerate}
 
 \end{document}
+

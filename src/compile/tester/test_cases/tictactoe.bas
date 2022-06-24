@@ -1,0 +1,59 @@
+PRINT "Tic-tac-toe"
+PRINT "Board layout:"
+PRINT "7 8 9"
+PRINT "4 5 6"
+PRINT "1 2 3"
+REM 1 is O, 2 is X, 0 is blank
+LET a=0
+LET b=0
+LET c=0
+LET d=0
+LET e=0
+LET f=0
+LET g=0
+LET h=0
+LET i=0
+PRINT "Player O:"
+INPUT o
+ON o=1 GOSUB g1
+ON o=2 GOSUB h1
+ON o=3 GOSUB i1
+ON o=4 GOSUB d1
+ON o=5 GOSUB e1
+ON o=6 GOSUB f1
+ON o=7 GOSUB a1
+ON o=8 GOSUB b1
+ON o=9 GOSUB c1
+PRINT "Player X:"
+INPUT x
+ON x=1 GOSUB g2
+
+a1:
+IF a=0 THEN LET a=1
+RETURN
+b1:
+IF b=0 THEN LET b=1
+RETURN
+c1:
+IF c=0 THEN LET c=1
+RETURN
+d1:
+IF d=0 THEN LET d=1
+RETURN
+e1:
+IF e=0 THEN LET e=1
+RETURN
+f1:
+IF f=0 THEN LET f=1
+RETURN
+g1:
+IF g=0 THEN LET g=1
+RETURN
+h1:
+IF h=0 THEN LET h=1
+RETURN
+i1:
+IF i=0 THEN LET i=1
+RETURN
+
+

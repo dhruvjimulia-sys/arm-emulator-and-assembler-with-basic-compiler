@@ -1,6 +1,6 @@
 CC      = gcc
-CFLAGS  = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic
-BUILD = assemble emulate
+CFLAGS  = -Wall -g -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Werror -pedantic 
+BUILD = assemble emulate compiler
 
 .SUFFIXES: .c .o
 
@@ -8,15 +8,11 @@ BUILD = assemble emulate
 
 all: $(BUILD)
 
-assemble: assemble.o
-
-emulate:	emulate.o type_definitions.o utils.o instructions.o
-emulate.o:	type_definitions.h utils.h instructions.h emulate.h
-instructions.o:	type_definitions.h utils.h instructions.h
-utils.o:	type_definitions.h utils.h
-type_definitions.o:	type_definitions.h
-
+emulate:
+	cd emulator; make clean all; cd ..
+assemble:
+	cd assembler; make clean all; cd ..
+compiler:
+	cd compile; make clean all; cd ..
 clean:
-	rm -f $(wildcard *.o)
-	rm -f assemble
-	rm -f emulate
+	cd emulator; make clean; cd ../assembler; make clean; cd ../compile; make clean; cd ..
