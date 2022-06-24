@@ -62,62 +62,9 @@ For the extension we built a compiler for a subset of the BBC BASIC language, wh
 \item INPUT 
 \end{itemize}
 
-We used Dijkstra's shunting yard algorithm which we learned in the Java spreadsheet PPT in order to ensure the correct order of operations for arithmetic expressions. We stored strings and performed string manipulation by accessing the memory of the emulator. We also added print and input instructions to the assembler and emulator in order to support I/O in BASIC, specified as follows:
-
-\verb|inputn #MEM_LOCATION| --- get numerical value from user and store it at memory address MEM_LOCATION.
-\verb|inputn REGISTER| --- get numerical value from user and store it in register REGISTER.
-\verb|inputs #MEM_LOCATION| --- get string value from user and store it beginning at memory address MEM_LOCATION.
-\verb|inputs REGISTER| --- get string value from user and store it in memory beginning at the memory address found in register REGISTER.
-
-\verb|printn #MEM_LOCATION| --- print the numerical value stored at memory address MEM_LOCATION.
-\verb|printn REGISTER| --- print the numerical value stored in register REGISTER.
-\verb|prints #MEM_LOCATION| --- print the string beginning at memory address MEM_LOCATION.
-\verb|prints REGISTER| --- print the string beginning at the memory address found in register REGISTER.
-
-Assembled instructions took the following form when represented in binary:
-
-\begin{center}
-\begin{tabluar}{ |c|c|c|c|c|c|c|c|c| }
-    \hline
-    COND & 1 & 1 & 1 & 0 & I & T & R &    ADDRESS    \\
-    \hline
-\end{tabluar}
-\end{center}
-
-Where:
-\begin{itemize}
-\item COND is the condition code.
-\item I is 0 for \verb|PRINT| and 1 for \verb|INPUT|.
-\item T is 0 for numerical values and 1 for strings.
-\item R is 0 when ADDRESS represents an immediate memory address and 1 when ADDRESS represents a register.
-\end{itemize}
-
+We used Dijkstra's shunting yard algorithm which we learned in the Java spreadsheet PPT in order to ensure the correct order of operations for arithmetic expressions. We stored strings and performed string manipulation by accessing the memory of the emulator. We also added print and input instructions to the assembler and emulator in order to support I/O in BASIC.
 We wrote functions to evaluate conditional and arithmetic expressions, and to store strings usefully in memory. We wrote a tester in C to test the compiler's capabilities. We believe the tester is effective as the test cases contain all of the instructions that we have implemented and we have successfully used the tester to help debug the compiler. We tested various programs through the entire compiler/assembler/emulator pipeline as a demonstration of the compiler's use.
 The biggest challenge was managing the memory of the ARM emulator, especially when storing and loading strings. The LEN and RND functions were particularly difficult to parse and integrate with arithmetic expressions. Pseudorandom number generation was difficult to conceptualise but once we had a suitable algorithm, we could implement it in assembly with relative ease.
-
-\subsection{Description and Use}
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
-
-\subsection{Design and Problems}
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
-
-\subsection{Testing}
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
 
 \section{Reflection}
 \subsection{Group Reflection}
